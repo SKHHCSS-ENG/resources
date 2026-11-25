@@ -1,0 +1,2103 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>誰是臥底 · 團契版</title>
+
+  <!-- Google Fonts: Fredoka (numbers/timers), Plus Jakarta Sans (UI), Noto Sans TC (Traditional Chinese) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Noto+Sans+TC:wght@400;500;700;900&family=Plus+Jakarta+Sans:wght@500;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            tealPrimary: '#0d9488',
+            tealHover: '#0f766e',
+            tealTint: '#f0fdfa',
+            tealBorder: '#ccfbf1',
+            slateDeep: '#0f172a',
+            coralRose: '#f43f5e',
+            amberBlank: '#f59e0b'
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', '"Noto Sans TC"', 'system-ui', '-apple-system', 'sans-serif'],
+            num: ['"Fredoka"', '"Noto Sans TC"', 'sans-serif']
+          }
+        }
+      }
+    };
+  </script>
+
+  <style>
+    :root {
+      --teal-primary: #0d9488;
+      --teal-hover: #0f766e;
+      --teal-tint: #f0fdfa;
+      --teal-border: #ccfbf1;
+      --slate-deep: #0f172a;
+      --coral-rose: #f43f5e;
+      --amber-blank: #f59e0b;
+    }
+
+    * {
+      -webkit-tap-highlight-color: transparent;
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      min-height: 100dvh;
+      background-color: var(--teal-tint);
+      background-image:
+        radial-gradient(circle at 12% 8%, rgba(204, 251, 241, 0.85) 0%, transparent 45%),
+        radial-gradient(circle at 88% 88%, rgba(153, 246, 228, 0.5) 0%, transparent 45%),
+        radial-gradient(circle at 82% 14%, rgba(254, 243, 199, 0.45) 0%, transparent 32%);
+      color: var(--slate-deep);
+      font-family: 'Plus Jakarta Sans', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      overscroll-behavior-y: none;
+    }
+
+    /* Prevent iOS Safari auto-zoom on form controls */
+    input, select, textarea, button {
+      font-size: 16px;
+    }
+
+    .app-shell {
+      min-height: 100dvh;
+      padding-top: env(safe-area-inset-top);
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
+    }
+
+    .font-num {
+      font-family: 'Fredoka', 'Noto Sans TC', sans-serif;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.96);
+      border: 1.5px solid var(--teal-border);
+      box-shadow: 0 10px 30px -10px rgba(13, 148, 136, 0.15), 0 4px 10px -4px rgba(15, 23, 42, 0.05);
+    }
+
+    .btn-primary {
+      background: linear-gradient(180deg, #14b8a6 0%, #0d9488 100%);
+      color: #ffffff;
+      box-shadow: 0 6px 16px -4px rgba(13, 148, 136, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+      transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(180deg, #0d9488 0%, #0f766e 100%);
+    }
+    .btn-primary:active {
+      transform: scale(0.98);
+      box-shadow: 0 2px 8px -2px rgba(13, 148, 136, 0.4);
+    }
+
+    .btn-secondary {
+      background: #ffffff;
+      color: var(--slate-deep);
+      border: 1.5px solid #cbd5e1;
+      transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+    .btn-secondary:hover {
+      background: #f8fafc;
+      border-color: #94a3b8;
+    }
+    .btn-secondary:active {
+      transform: scale(0.98);
+    }
+
+    .btn-teal-soft {
+      background: #f0fdfa;
+      color: #0f766e;
+      border: 1.5px solid #99f6e4;
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+    .btn-teal-soft:hover {
+      background: #ccfbf1;
+    }
+    .btn-teal-soft:active {
+      transform: scale(0.97);
+    }
+
+    .btn-amber-soft {
+      background: #fffbeb;
+      color: #b45309;
+      border: 1.5px solid #fde68a;
+      transition: transform 0.12s ease, background 0.15s ease;
+    }
+    .btn-amber-soft:hover {
+      background: #fef3c7;
+    }
+    .btn-amber-soft:active {
+      transform: scale(0.97);
+    }
+
+    .btn-danger {
+      background: linear-gradient(180deg, #fb7185 0%, #f43f5e 100%);
+      color: #ffffff;
+      box-shadow: 0 6px 14px -4px rgba(244, 63, 94, 0.42);
+      transition: transform 0.12s ease;
+    }
+    .btn-danger:active {
+      transform: scale(0.98);
+    }
+
+    /* Animations */
+    @keyframes popIn {
+      0% { opacity: 0; transform: scale(0.94) translateY(8px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .animate-pop {
+      animation: popIn 0.22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes toastSlide {
+      0% { opacity: 0; transform: translate(-50%, -18px) scale(0.96); }
+      100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+    }
+    .animate-toast {
+      animation: toastSlide 0.25s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+    }
+
+    @keyframes floatGentle {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-5px); }
+    }
+    .anime-float {
+      animation: floatGentle 3.4s ease-in-out infinite;
+    }
+
+    @keyframes pulseUrgent {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.06); }
+    }
+    .timer-urgent {
+      color: #f43f5e !important;
+      animation: pulseUrgent 0.6s ease-in-out infinite;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .anime-float, .timer-urgent, .animate-pop, .animate-toast {
+        animation: none !important;
+      }
+    }
+
+    /* Player Card States */
+    .player-card-eliminated {
+      background: #f8fafc;
+      border-color: #e2e8f0;
+      opacity: 0.88;
+    }
+    .player-card-active {
+      background: #ffffff;
+      border: 2px solid #99f6e4;
+      box-shadow: 0 4px 12px -4px rgba(13, 148, 136, 0.14);
+      transition: transform 0.12s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    .player-card-active:hover {
+      border-color: #0d9488;
+      box-shadow: 0 8px 18px -6px rgba(13, 148, 136, 0.24);
+    }
+    .player-card-active:active {
+      transform: scale(0.96);
+    }
+  </style>
+</head>
+<body class="antialiased selection:bg-teal-200 selection:text-slate-900">
+
+  <div class="app-shell flex flex-col max-w-2xl mx-auto px-3 sm:px-5">
+
+    <!-- =========================================================
+         TOP APP HEADER (Single-row Title + Cheerful Anime Host Mascot)
+         ========================================================= -->
+    <header class="flex items-center justify-between py-2.5 sm:py-3.5 gap-2">
+      <div class="flex items-center gap-2.5 min-w-0">
+        <!-- Anime Illustration #1: Cheerful Fellowship Host Mascot -->
+        <div class="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-gradient-to-br from-teal-50 to-teal-100 border-2 border-teal-200 flex items-center justify-center shadow-sm flex-shrink-0 overflow-hidden anime-float" aria-hidden="true">
+          <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+              <linearGradient id="hostBg" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="#f0fdfa"/>
+                <stop offset="100%" stop-color="#ccfbf1"/>
+              </linearGradient>
+              <linearGradient id="hostHair" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#334155"/>
+                <stop offset="100%" stop-color="#0f172a"/>
+              </linearGradient>
+            </defs>
+            <rect width="100" height="100" fill="url(#hostBg)"/>
+            <!-- Sparkles -->
+            <path d="M16 18 L18 23 L23 25 L18 27 L16 32 L14 27 L9 25 L14 23 Z" fill="#f59e0b"/>
+            <path d="M84 14 L85.5 18 L89.5 19.5 L85.5 21 L84 25 L82.5 21 L78.5 19.5 L82.5 18 Z" fill="#14b8a6"/>
+            <!-- Shoulders & Teal Hoodie -->
+            <path d="M22 100 C22 77 33 70 50 70 C67 70 78 77 78 100 Z" fill="#0d9488" stroke="#1e293b" stroke-width="2.5"/>
+            <!-- White collar/hoodie strings -->
+            <path d="M38 72 Q50 82 62 72" fill="#0f766e" stroke="#1e293b" stroke-width="2"/>
+            <path d="M44 77 L44 89 M56 77 L56 89" stroke="#ffffff" stroke-width="2.2" stroke-linecap="round"/>
+            <!-- Back hair -->
+            <path d="M26 42 C24 62 28 72 34 74 L66 74 C72 72 76 62 74 42 Z" fill="url(#hostHair)" stroke="#1e293b" stroke-width="2.2"/>
+            <!-- Neck -->
+            <rect x="44" y="61" width="12" height="12" rx="4" fill="#f7c5a8"/>
+            <!-- Face -->
+            <path d="M31 44 C31 28 69 28 69 44 C69 59 59 67 50 67 C41 67 31 59 31 44 Z" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.4"/>
+            <!-- Blush -->
+            <ellipse cx="38" cy="54" rx="4.2" ry="2.2" fill="#fda4af" opacity="0.75"/>
+            <ellipse cx="62" cy="54" rx="4.2" ry="2.2" fill="#fda4af" opacity="0.75"/>
+            <!-- Expressive Anime Eyes -->
+            <g>
+              <ellipse cx="41" cy="48" rx="4.2" ry="5" fill="#1e293b"/>
+              <ellipse cx="41" cy="49.5" rx="2.7" ry="2.6" fill="#0d9488"/>
+              <circle cx="39.5" cy="46.2" r="1.7" fill="#ffffff"/>
+              <circle cx="42.5" cy="50.5" r="0.9" fill="#ffffff"/>
+              <path d="M36 43.5 Q41 41 45.5 43.5" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <g>
+              <ellipse cx="59" cy="48" rx="4.2" ry="5" fill="#1e293b"/>
+              <ellipse cx="59" cy="49.5" rx="2.7" ry="2.6" fill="#0d9488"/>
+              <circle cx="57.5" cy="46.2" r="1.7" fill="#ffffff"/>
+              <circle cx="60.5" cy="50.5" r="0.9" fill="#ffffff"/>
+              <path d="M54.5 43.5 Q59 41 64 43.5" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+            </g>
+            <!-- Cheerful Open Smile -->
+            <path d="M46 57 Q50 62 54 57 Z" fill="#f43f5e" stroke="#1e293b" stroke-width="1.6" stroke-linejoin="round"/>
+            <!-- Front Hair Bangs -->
+            <path d="M27 44 C26 24 40 16 52 17 C66 18 74 27 73 44 C69 36 65 32 61 36 C59 29 53 28 49 38 C46 31 41 31 37 38 C34 33 30 37 27 44 Z" fill="url(#hostHair)" stroke="#1e293b" stroke-width="2.2" stroke-linejoin="round"/>
+            <!-- Hair Shine Highlight -->
+            <path d="M38 25 Q49 21 60 25" fill="none" stroke="#94a3b8" stroke-width="2.2" stroke-linecap="round" opacity="0.7"/>
+            <!-- Clue Card held up on right -->
+            <g transform="translate(69, 60) rotate(12)">
+              <rect x="0" y="0" width="20" height="26" rx="4" fill="#ffffff" stroke="#0d9488" stroke-width="2.2"/>
+              <text x="10" y="18" text-anchor="middle" font-family="Fredoka, sans-serif" font-size="14" font-weight="700" fill="#f59e0b">?</text>
+            </g>
+          </svg>
+        </div>
+
+        <div class="min-w-0">
+          <h1 class="text-lg sm:text-xl font-black tracking-tight text-slate-900 whitespace-nowrap truncate">
+            誰是臥底 · 團契版
+          </h1>
+          <p class="text-[11px] sm:text-xs font-bold text-teal-700 whitespace-nowrap truncate">
+            中學生團契專用 · 離線即玩
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 flex-shrink-0">
+        <button id="btn-sound-toggle" type="button" aria-label="切換音效"
+          class="h-10 px-3 rounded-xl bg-white border border-teal-200 text-slate-700 hover:bg-teal-50 flex items-center justify-center gap-1.5 text-sm font-bold shadow-xs transition">
+          <span id="sound-icon" class="text-base leading-none">🔊</span>
+          <span id="sound-label" class="hidden sm:inline text-xs">音效開</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- Floating Toast Banner -->
+    <div id="toast-banner" class="hidden fixed top-4 left-1/2 z-50 w-[92%] max-w-md pointer-events-none">
+      <div id="toast-inner" class="animate-toast rounded-2xl px-4 py-3.5 shadow-xl border-2 flex items-center justify-center gap-2 text-center font-black text-base sm:text-lg">
+      </div>
+    </div>
+
+    <!-- =========================================================
+         PHASE 1: SETUP SCREEN (遊戲設定)
+         ========================================================= -->
+    <main id="phase-setup" class="flex-1 flex flex-col justify-center pb-6">
+      <div class="glass-card rounded-3xl p-4 sm:p-6 space-y-5 animate-pop">
+
+        <!-- Section 1: Word Set Selector -->
+        <section class="space-y-3">
+          <div class="flex items-center justify-between gap-2 flex-wrap">
+            <label for="word-set-select" class="text-sm font-bold text-teal-800 flex items-center gap-1.5">
+              <span>📚</span> 選擇題目（10 精選 + 5 備用）
+            </label>
+            <div class="flex items-center gap-1.5">
+              <span id="played-counter" class="text-xs font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2.5 py-1 rounded-full">
+                已玩 0 / 15 題
+              </span>
+              <button id="btn-reset-played" type="button" title="重設已玩紀錄"
+                class="text-xs font-bold text-slate-500 hover:text-rose-600 bg-white border border-slate-200 hover:border-rose-200 px-2 py-1 rounded-full transition">
+                ↺ 重設
+              </button>
+            </div>
+          </div>
+
+          <div class="relative">
+            <select id="word-set-select"
+              class="w-full h-12 pl-4 pr-10 rounded-2xl bg-white border-2 border-teal-200 text-slate-900 font-bold focus:outline-none focus:border-teal-600 appearance-none cursor-pointer">
+            </select>
+            <div class="pointer-events-none absolute right-3.5 top-1/2 -translate-y-1/2 text-teal-600">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+              </svg>
+            </div>
+          </div>
+
+          <!-- Privacy-First Word Preview Banner -->
+          <div id="word-preview-locked" class="rounded-2xl bg-teal-50/80 border border-teal-200 px-4 py-3 flex items-center justify-between gap-2">
+            <span class="text-xs sm:text-sm font-bold text-teal-800">🔒 題目已隱藏（防偷看）</span>
+            <span id="swap-status-pill" class="hidden text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-600 text-white">已對調</span>
+          </div>
+
+          <div id="word-preview-box" class="hidden rounded-2xl bg-teal-50/90 border border-teal-200 p-3.5">
+            <div class="grid grid-cols-2 gap-3 text-center">
+              <div class="bg-white rounded-xl p-2.5 border border-teal-200">
+                <div class="text-xs font-bold text-teal-700 mb-0.5">平民詞</div>
+                <div id="preview-civilian" class="text-lg font-black text-slate-900"></div>
+              </div>
+              <div class="bg-white rounded-xl p-2.5 border border-rose-200">
+                <div class="text-xs font-bold text-rose-600 mb-0.5">臥底詞</div>
+                <div id="preview-undercover" class="text-lg font-black text-slate-900"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Word Actions -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+            <button id="btn-toggle-preview" type="button"
+              class="btn-teal-soft h-11 rounded-xl px-2 text-xs sm:text-sm font-bold flex items-center justify-center gap-1">
+              <span>👁️</span> <span id="preview-btn-text">顯示題目</span>
+            </button>
+            <button id="btn-random-set" type="button"
+              class="btn-teal-soft h-11 rounded-xl px-2 text-xs sm:text-sm font-bold flex items-center justify-center gap-1">
+              <span>🎲</span> <span>隨機未玩</span>
+            </button>
+            <button id="btn-swap-words" type="button"
+              class="btn-secondary h-11 rounded-xl px-2 text-xs sm:text-sm font-bold flex items-center justify-center gap-1">
+              <span>⇄</span> <span id="swap-btn-text">對調詞語</span>
+            </button>
+            <button id="btn-custom-word" type="button"
+              class="btn-secondary h-11 rounded-xl px-2 text-xs sm:text-sm font-bold flex items-center justify-center gap-1">
+              <span>✏️</span> <span>自訂題目</span>
+            </button>
+          </div>
+        </section>
+
+        <hr class="border-teal-100" />
+
+        <!-- Section 2: Player & Role Steppers -->
+        <section class="space-y-3">
+          <!-- Total Players -->
+          <div class="flex items-center justify-between bg-slate-50/80 rounded-2xl p-3 border border-slate-200/80">
+            <div>
+              <div class="font-bold text-slate-900 text-base">總人數</div>
+              <div class="text-xs text-slate-500">4 – 14 人</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <button type="button" data-stepper="total" data-delta="-1"
+                class="w-11 h-11 rounded-xl bg-white border border-slate-300 text-slate-800 font-num text-2xl font-bold flex items-center justify-center active:scale-95 shadow-xs">−</button>
+              <span id="val-total" class="font-num text-2xl font-bold w-8 text-center text-slate-900">6</span>
+              <button type="button" data-stepper="total" data-delta="1"
+                class="w-11 h-11 rounded-xl bg-white border border-slate-300 text-slate-800 font-num text-2xl font-bold flex items-center justify-center active:scale-95 shadow-xs">+</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <!-- Undercover Count -->
+            <div class="flex items-center justify-between bg-rose-50/50 rounded-2xl p-3 border border-rose-200/70">
+              <div>
+                <div class="font-bold text-rose-700 text-base">臥底人數</div>
+                <div class="text-xs text-rose-500/90">1 – 3 人</div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button type="button" data-stepper="undercover" data-delta="-1"
+                  class="w-10 h-10 rounded-xl bg-white border border-rose-200 text-rose-700 font-num text-xl font-bold flex items-center justify-center active:scale-95 shadow-xs">−</button>
+                <span id="val-undercover" class="font-num text-2xl font-bold w-7 text-center text-rose-700">1</span>
+                <button type="button" data-stepper="undercover" data-delta="1"
+                  class="w-10 h-10 rounded-xl bg-white border border-rose-200 text-rose-700 font-num text-xl font-bold flex items-center justify-center active:scale-95 shadow-xs">+</button>
+              </div>
+            </div>
+
+            <!-- Blank Count -->
+            <div class="flex items-center justify-between bg-amber-50/60 rounded-2xl p-3 border border-amber-200/80">
+              <div>
+                <div class="font-bold text-amber-700 text-base">白板人數</div>
+                <div class="text-xs text-amber-600/90">0 – 2 人（不會先講）</div>
+              </div>
+              <div class="flex items-center gap-2.5">
+                <button type="button" data-stepper="blank" data-delta="-1"
+                  class="w-10 h-10 rounded-xl bg-white border border-amber-200 text-amber-700 font-num text-xl font-bold flex items-center justify-center active:scale-95 shadow-xs">−</button>
+                <span id="val-blank" class="font-num text-2xl font-bold w-7 text-center text-amber-700">1</span>
+                <button type="button" data-stepper="blank" data-delta="1"
+                  class="w-10 h-10 rounded-xl bg-white border border-amber-200 text-amber-700 font-num text-xl font-bold flex items-center justify-center active:scale-95 shadow-xs">+</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Role Summary Bar -->
+          <div class="rounded-2xl bg-teal-50 border border-teal-200 px-4 py-2.5 flex items-center justify-center flex-wrap gap-x-4 gap-y-1 text-sm font-bold">
+            <span class="text-teal-800 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-teal-600 inline-block"></span>
+              平民 <span id="sum-civilian" class="font-num text-base">4</span>
+            </span>
+            <span class="text-slate-300">·</span>
+            <span class="text-rose-700 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span>
+              臥底 <span id="sum-undercover" class="font-num text-base">1</span>
+            </span>
+            <span class="text-slate-300">·</span>
+            <span class="text-amber-700 flex items-center gap-1.5">
+              <span class="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
+              白板 <span id="sum-blank" class="font-num text-base">1</span>
+            </span>
+          </div>
+
+          <!-- Strict Rule Notice -->
+          <div class="flex items-center justify-center gap-1.5 text-xs font-bold text-amber-700 bg-amber-50/70 border border-amber-200/80 rounded-xl py-2 px-3">
+            <span>🛡️</span>
+            <span>系統規則：隨機抽第一位發言者時，白板絕對不會先講！</span>
+          </div>
+        </section>
+
+        <!-- Primary CTA -->
+        <button id="btn-start-deal" type="button"
+          class="btn-primary w-full h-14 rounded-2xl font-black text-lg tracking-wide flex items-center justify-center gap-2">
+          <span>開始發牌</span>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.8" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"/>
+          </svg>
+        </button>
+
+      </div>
+    </main>
+
+    <!-- =========================================================
+         PHASE 2: PASS-THE-DEVICE DEALING SCREEN (秘密發牌)
+         ========================================================= -->
+    <main id="phase-deal" class="hidden flex-1 flex flex-col justify-between pb-6 space-y-4">
+      <!-- Top Bar: Progress & Back -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <button id="btn-deal-back" type="button"
+            class="btn-secondary h-10 px-3.5 rounded-xl text-sm font-bold flex items-center gap-1.5">
+            <span>←</span> 返回設定
+          </button>
+          <div class="font-num text-base font-bold text-teal-800 bg-white border border-teal-200 px-3.5 py-1.5 rounded-full shadow-xs">
+            <span id="deal-progress-text">1 / 6</span>
+          </div>
+        </div>
+        <div class="w-full h-2 rounded-full bg-teal-100 overflow-hidden">
+          <div id="deal-progress-bar" class="h-full bg-teal-600 rounded-full transition-all duration-300" style="width: 16%"></div>
+        </div>
+      </div>
+
+      <!-- Center Reveal Card -->
+      <div class="flex-1 flex flex-col items-center justify-center py-2">
+        <div class="w-full glass-card rounded-3xl p-5 sm:p-8 text-center space-y-5 animate-pop">
+
+          <!-- Player Number Header -->
+          <div class="space-y-1">
+            <div class="inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full bg-teal-50 border border-teal-200 text-teal-700 text-xs font-bold">
+              秘密發牌
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-black text-slate-900">
+              請交給 <span id="deal-player-num" class="font-num text-teal-600 text-3xl sm:text-4xl">1</span> 號玩家
+            </h2>
+          </div>
+
+          <!-- Hidden State Panel with Anime Illustration #2 ("Shhh!" Detective) -->
+          <div id="deal-state-hidden" class="py-5 px-4 rounded-2xl bg-teal-50/75 border-2 border-dashed border-teal-300 space-y-4">
+            <div class="w-32 h-32 mx-auto anime-float" aria-hidden="true">
+              <svg viewBox="0 0 140 140" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                  <linearGradient id="shhhHair" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stop-color="#334155"/>
+                    <stop offset="100%" stop-color="#0f172a"/>
+                  </linearGradient>
+                </defs>
+                <!-- Soft Halo Circle -->
+                <circle cx="70" cy="70" r="62" fill="#ffffff" stroke="#99f6e4" stroke-width="3"/>
+                <!-- Speech Bubble "噓~" -->
+                <g transform="translate(96, 16)">
+                  <rect x="0" y="0" width="34" height="24" rx="10" fill="#fef3c7" stroke="#f59e0b" stroke-width="2"/>
+                  <path d="M8 23 L4 30 L15 24 Z" fill="#fef3c7" stroke="#f59e0b" stroke-width="2" stroke-linejoin="round"/>
+                  <text x="17" y="16" text-anchor="middle" font-family="Noto Sans TC, sans-serif" font-size="11" font-weight="900" fill="#b45309">噓~</text>
+                </g>
+                <!-- Secret Envelope at bottom -->
+                <g transform="translate(26, 94)">
+                  <rect x="0" y="0" width="88" height="36" rx="8" fill="#ffffff" stroke="#0d9488" stroke-width="2.6"/>
+                  <path d="M2 4 L44 24 L86 4" fill="none" stroke="#0d9488" stroke-width="2.4" stroke-linejoin="round"/>
+                  <circle cx="44" cy="21" r="7" fill="#f43f5e"/>
+                  <text x="44" y="24.5" text-anchor="middle" font-size="9" font-weight="900" fill="#ffffff">秘</text>
+                </g>
+                <!-- Detective Coat Shoulders -->
+                <path d="M36 98 C38 80 50 75 70 75 C90 75 102 80 104 98 Z" fill="#0d9488" stroke="#1e293b" stroke-width="2.4"/>
+                <!-- Back hair -->
+                <path d="M40 50 C38 72 44 82 52 84 L88 84 C96 82 102 72 100 50 Z" fill="url(#shhhHair)" stroke="#1e293b" stroke-width="2.2"/>
+                <!-- Face -->
+                <path d="M46 52 C46 34 94 34 94 52 C94 70 82 80 70 80 C58 80 46 70 46 52 Z" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.4"/>
+                <!-- Blush -->
+                <ellipse cx="55" cy="63" rx="4.5" ry="2.2" fill="#fda4af" opacity="0.75"/>
+                <ellipse cx="85" cy="63" rx="4.5" ry="2.2" fill="#fda4af" opacity="0.75"/>
+                <!-- Playful Winking Eyes -->
+                <!-- Left eye open -->
+                <ellipse cx="59" cy="56" rx="4.5" ry="5.5" fill="#1e293b"/>
+                <ellipse cx="59" cy="57.5" rx="2.8" ry="2.8" fill="#0d9488"/>
+                <circle cx="57.5" cy="54" r="1.8" fill="#ffffff"/>
+                <!-- Right eye playful wink -->
+                <path d="M76 56 Q81 51 86 56" fill="none" stroke="#1e293b" stroke-width="2.6" stroke-linecap="round"/>
+                <!-- Hair Bangs -->
+                <path d="M42 52 C42 29 58 22 71 23 C86 24 98 33 98 52 C93 43 88 39 83 45 C80 37 73 36 69 47 C65 39 59 38 55 46 C51 40 46 44 42 52 Z" fill="url(#shhhHair)" stroke="#1e293b" stroke-width="2.2" stroke-linejoin="round"/>
+                <!-- Detective Beret / Cap Accent -->
+                <path d="M44 33 C48 18 92 18 96 33 C82 28 58 28 44 33 Z" fill="#0f766e" stroke="#1e293b" stroke-width="2.2"/>
+                <circle cx="70" cy="20" r="3.5" fill="#f59e0b" stroke="#1e293b" stroke-width="1.8"/>
+                <!-- Finger held up to lips ("Shhh!") -->
+                <rect x="66.5" y="65" width="7" height="22" rx="3.5" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.2"/>
+                <ellipse cx="70" cy="86" rx="9" ry="7" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.2"/>
+              </svg>
+            </div>
+            <p class="text-sm font-bold text-slate-600">請確保旁邊沒有人偷看螢幕</p>
+            <button id="btn-reveal-word" type="button"
+              class="btn-primary w-full h-14 rounded-2xl font-black text-lg">
+              查看我的詞語
+            </button>
+          </div>
+
+          <!-- Revealed State Panel with Anime Illustration #3 (Identical Neutral Chibi Detective for ALL Roles) -->
+          <div id="deal-state-revealed" class="hidden py-5 px-4 rounded-2xl bg-white border-2 border-teal-500 shadow-inner space-y-4">
+            <!-- Neutral Chibi Detective (Strictly identical for Civilian, Undercover & Blank!) -->
+            <div class="w-20 h-20 mx-auto" aria-hidden="true">
+              <svg viewBox="0 0 100 100" class="w-full h-full" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="50" cy="50" r="46" fill="#f0fdfa" stroke="#99f6e4" stroke-width="2.5"/>
+                <!-- Body -->
+                <path d="M28 90 C30 76 40 72 50 72 C60 72 70 76 72 90 Z" fill="#0d9488" stroke="#1e293b" stroke-width="2.2"/>
+                <!-- Chibi Head -->
+                <circle cx="50" cy="48" r="24" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.3"/>
+                <!-- Blush -->
+                <ellipse cx="36" cy="54" rx="4" ry="2" fill="#fda4af" opacity="0.75"/>
+                <ellipse cx="64" cy="54" rx="4" ry="2" fill="#fda4af" opacity="0.75"/>
+                <!-- Big Cute Chibi Eyes -->
+                <circle cx="40" cy="49" r="4.2" fill="#1e293b"/>
+                <circle cx="38.8" cy="47.5" r="1.5" fill="#ffffff"/>
+                <circle cx="60" cy="49" r="4.2" fill="#1e293b"/>
+                <circle cx="58.8" cy="47.5" r="1.5" fill="#ffffff"/>
+                <!-- Cute smile -->
+                <path d="M46 57 Q50 61 54 57" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+                <!-- Hair -->
+                <path d="M26 46 C26 24 74 24 74 46 C69 38 63 36 59 42 C55 34 45 34 41 42 C37 36 31 38 26 46 Z" fill="#1e293b"/>
+                <!-- Magnifying Glass -->
+                <g transform="translate(65, 58) rotate(28)">
+                  <line x1="8" y1="16" x2="8" y2="28" stroke="#0f766e" stroke-width="4" stroke-linecap="round"/>
+                  <circle cx="8" cy="8" r="9" fill="#ccfbf1" stroke="#1e293b" stroke-width="2.2"/>
+                  <path d="M4 5 A5 5 0 0 1 10 3" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+                </g>
+              </svg>
+            </div>
+
+            <!-- Normal Word View -->
+            <div id="deal-word-normal" class="space-y-1.5">
+              <div class="text-xs font-bold text-slate-400 tracking-wider">你的詞語</div>
+              <div id="deal-word-text" class="text-4xl sm:text-5xl font-black text-slate-900 tracking-tight py-1.5 break-words">
+                祈禱
+              </div>
+            </div>
+
+            <!-- Blank Card View -->
+            <div id="deal-word-blank" class="hidden space-y-2.5 py-1">
+              <div class="inline-block px-5 py-2 rounded-2xl bg-amber-100 border-2 border-amber-400 text-amber-800 text-3xl sm:text-4xl font-black">
+                你是白板！
+              </div>
+              <p class="text-sm font-bold text-amber-700 leading-relaxed max-w-xs mx-auto">
+                你沒有詞語，請細心聆聽大家形容並融入其中！
+              </p>
+            </div>
+
+            <button id="btn-next-player" type="button"
+              class="btn-primary w-full h-14 rounded-2xl font-black text-lg">
+              記住了，隱藏並傳給下一位
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="h-2"></div>
+    </main>
+
+    <!-- =========================================================
+         PHASE 3: DISCUSSION, TIMER & VOTING SCREEN (討論與投票)
+         ========================================================= -->
+    <main id="phase-play" class="hidden flex-1 flex flex-col space-y-3.5 pb-6 animate-pop">
+
+      <!-- Top HUD Card -->
+      <section class="glass-card rounded-3xl p-3.5 sm:p-4 space-y-3">
+
+        <!-- Row 1: First Speaker Banner (Guaranteed Non-Blank) + Anime Chibi Accent -->
+        <div class="rounded-2xl bg-gradient-to-r from-teal-50 via-white to-amber-50/70 border border-teal-200 p-2.5 sm:p-3 flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex items-center gap-2.5 min-w-0">
+            <!-- Anime Illustration #4: Compact Chibi Thinking Icon -->
+            <div class="w-10 h-10 rounded-xl bg-white border border-teal-200 flex items-center justify-center flex-shrink-0 shadow-xs" aria-hidden="true">
+              <svg viewBox="0 0 64 64" class="w-9 h-9" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="34" r="20" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.2"/>
+                <path d="M12 32 C12 14 52 14 52 32 C47 26 42 25 38 29 C35 23 29 23 26 29 C22 25 17 26 12 32 Z" fill="#1e293b"/>
+                <circle cx="24" cy="36" r="3" fill="#1e293b"/>
+                <circle cx="23.2" cy="35" r="1" fill="#ffffff"/>
+                <circle cx="40" cy="36" r="3" fill="#1e293b"/>
+                <circle cx="39.2" cy="35" r="1" fill="#ffffff"/>
+                <ellipse cx="19" cy="41" rx="3" ry="1.5" fill="#fda4af"/>
+                <ellipse cx="45" cy="41" rx="3" ry="1.5" fill="#fda4af"/>
+                <path d="M29 44 Q32 46 35 44" fill="none" stroke="#1e293b" stroke-width="2" stroke-linecap="round"/>
+                <!-- Little thought sparkle -->
+                <circle cx="53" cy="14" r="5" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.8"/>
+                <text x="53" y="17.5" text-anchor="middle" font-size="8" font-weight="900" fill="#b45309">!</text>
+              </svg>
+            </div>
+            <div class="min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span id="hud-speaker-text" class="text-sm sm:text-base font-black text-slate-900">
+                  🎤 本局先講：1 號玩家
+                </span>
+                <span class="text-[11px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 border border-amber-300 whitespace-nowrap">
+                  白板不會先講
+                </span>
+              </div>
+              <div class="flex items-center gap-2 mt-0.5 text-xs font-bold text-teal-700">
+                <span id="hud-round-label">第 1 題</span>
+                <span>·</span>
+                <span id="hud-alive-pill">存活：6 人</span>
+              </div>
+            </div>
+          </div>
+
+          <button id="btn-reroll-speaker" type="button"
+            class="btn-amber-soft h-9 px-3 rounded-xl text-xs font-bold flex items-center gap-1 flex-shrink-0">
+            <span>🎲</span> <span>重抽先講</span>
+          </button>
+        </div>
+
+        <!-- Row 2: Compact Speaking Timer -->
+        <div class="rounded-2xl bg-slate-50 border border-slate-200/90 p-2.5 sm:p-3 space-y-2">
+          <div class="flex items-center justify-between gap-2">
+            <!-- Timer Presets -->
+            <div class="flex items-center gap-1">
+              <button type="button" data-timer-preset="10"
+                class="timer-preset-btn h-8 px-2.5 rounded-lg text-xs font-num font-bold border transition bg-teal-600 text-white border-teal-600">10s</button>
+              <button type="button" data-timer-preset="15"
+                class="timer-preset-btn h-8 px-2.5 rounded-lg text-xs font-num font-bold border transition bg-white text-slate-600 border-slate-300">15s</button>
+              <button type="button" data-timer-preset="30"
+                class="timer-preset-btn h-8 px-2.5 rounded-lg text-xs font-num font-bold border transition bg-white text-slate-600 border-slate-300">30s</button>
+            </div>
+
+            <!-- Countdown Digits -->
+            <div id="timer-display" class="font-num text-2xl sm:text-3xl font-bold text-slate-900 leading-none">
+              10
+            </div>
+
+            <!-- Start/Pause & Reset -->
+            <div class="flex items-center gap-1.5">
+              <button id="btn-timer-toggle" type="button"
+                class="btn-primary h-9 px-3.5 rounded-xl text-xs sm:text-sm font-bold">
+                開始
+              </button>
+              <button id="btn-timer-reset" type="button" aria-label="重設計時器"
+                class="btn-secondary h-9 w-9 rounded-xl flex items-center justify-center text-sm font-bold">
+                ↺
+              </button>
+            </div>
+          </div>
+
+          <!-- Timer Progress Bar -->
+          <div class="w-full h-1.5 rounded-full bg-slate-200 overflow-hidden">
+            <div id="timer-bar" class="h-full bg-teal-500 rounded-full transition-all duration-200" style="width: 100%"></div>
+          </div>
+        </div>
+
+        <!-- Row 3: Quick Host Utilities -->
+        <div class="grid grid-cols-3 gap-2">
+          <button id="btn-forgot-word" type="button"
+            class="btn-secondary h-9 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+            <span>🔑</span> <span>忘記詞語</span>
+          </button>
+          <button id="btn-host-peek" type="button"
+            class="btn-teal-soft h-9 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1">
+            <span>👁️</span> <span>主持偷看</span>
+          </button>
+          <button id="btn-early-end" type="button"
+            class="btn-secondary h-9 px-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 text-rose-600 border-rose-200 hover:bg-rose-50">
+            <span>🏁</span> <span>提前結算</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- Player Grid -->
+      <section class="flex-1">
+        <div id="player-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2.5 sm:gap-3">
+          <!-- Dynamically populated player cards -->
+        </div>
+      </section>
+
+      <!-- Bottom Action Footer -->
+      <section class="flex items-center justify-between gap-2 pt-1">
+        <button id="btn-undo-elim" type="button" disabled
+          class="btn-secondary h-11 px-4 rounded-2xl text-sm font-bold flex items-center gap-1.5 disabled:opacity-40 disabled:pointer-events-none">
+          <span>↩️</span> 復原上一步
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button id="btn-reopen-result" type="button"
+            class="hidden btn-teal-soft h-11 px-4 rounded-2xl text-sm font-bold">
+            🏆 檢視結果
+          </button>
+          <button id="btn-play-back-setup" type="button"
+            class="btn-secondary h-11 px-4 rounded-2xl text-sm font-bold">
+            ⚙️ 返回設定
+          </button>
+        </div>
+      </section>
+    </main>
+
+  </div>
+
+  <!-- =========================================================
+       IN-APP MODALS (Zero browser alert/confirm/prompt)
+       ========================================================= -->
+
+  <!-- Modal 1: Custom Word Pair -->
+  <div id="modal-custom-word" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="glass-card bg-white rounded-3xl w-full max-w-sm p-5 space-y-4 animate-pop">
+      <h3 class="text-lg font-black text-slate-900 flex items-center gap-2">
+        <span>✏️</span> 自訂題目
+      </h3>
+      <div class="space-y-3">
+        <div>
+          <label for="input-custom-civilian" class="block text-xs font-bold text-teal-700 mb-1">平民詞</label>
+          <input id="input-custom-civilian" type="text" maxlength="20" placeholder="例如：祈禱"
+            class="w-full h-12 px-3.5 rounded-xl border-2 border-teal-200 focus:border-teal-600 focus:outline-none font-bold" />
+        </div>
+        <div>
+          <label for="input-custom-undercover" class="block text-xs font-bold text-rose-600 mb-1">臥底詞</label>
+          <input id="input-custom-undercover" type="text" maxlength="20" placeholder="例如：許願"
+            class="w-full h-12 px-3.5 rounded-xl border-2 border-rose-200 focus:border-rose-500 focus:outline-none font-bold" />
+        </div>
+        <p id="custom-word-error" class="hidden text-xs font-bold text-rose-600"></p>
+      </div>
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button id="btn-custom-cancel" type="button" class="btn-secondary h-12 rounded-xl font-bold">取消</button>
+        <button id="btn-custom-save" type="button" class="btn-primary h-12 rounded-xl font-bold">套用題目</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 2: Confirm Elimination -->
+  <div id="modal-confirm-elim" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="glass-card bg-white rounded-3xl w-full max-w-xs p-5 text-center space-y-4 animate-pop">
+      <div class="w-14 h-14 mx-auto rounded-2xl bg-rose-50 border border-rose-200 text-rose-600 font-num text-2xl font-bold flex items-center justify-center">
+        <span id="elim-modal-num">1</span>號
+      </div>
+      <h3 class="text-xl font-black text-slate-900">
+        確定投出 <span id="elim-modal-title-num" class="font-num text-rose-600">1</span> 號玩家？
+      </h3>
+      <div class="grid grid-cols-2 gap-2.5 pt-1">
+        <button id="btn-elim-cancel" type="button" class="btn-secondary h-12 rounded-xl font-bold">取消</button>
+        <button id="btn-elim-confirm" type="button" class="btn-danger h-12 rounded-xl font-bold">確定投出</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 3: Host Peek (One-tap reveal guard) -->
+  <div id="modal-host-peek" class="hidden fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="glass-card bg-white rounded-3xl w-full max-w-md p-5 space-y-4 animate-pop max-h-[85dvh] flex flex-col">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-black text-slate-900 flex items-center gap-1.5">
+          <span>👁️</span> 主持偷看
+        </h3>
+        <button id="btn-host-close" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div id="host-peek-locked" class="py-6 text-center space-y-4">
+        <p class="text-sm font-bold text-slate-600">只限主持查看，請確保學生看不到螢幕</p>
+        <button id="btn-host-unlock" type="button" class="btn-primary w-full h-12 rounded-xl font-bold">
+          點擊顯示答案與身份
+        </button>
+      </div>
+
+      <div id="host-peek-content" class="hidden space-y-4 overflow-y-auto pr-1">
+        <div class="grid grid-cols-2 gap-2.5 text-center">
+          <div class="rounded-2xl bg-teal-50 border border-teal-200 p-3">
+            <div class="text-xs font-bold text-teal-700">平民詞</div>
+            <div id="host-civ-word" class="text-xl font-black text-slate-900 mt-0.5"></div>
+          </div>
+          <div class="rounded-2xl bg-rose-50 border border-rose-200 p-3">
+            <div class="text-xs font-bold text-rose-600">臥底詞</div>
+            <div id="host-und-word" class="text-xl font-black text-slate-900 mt-0.5"></div>
+          </div>
+        </div>
+        <div id="host-player-list" class="grid grid-cols-2 gap-2 text-sm"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 4: Forgot Word (Individual safe recovery) -->
+  <div id="modal-forgot-word" class="hidden fixed inset-0 z-50 bg-slate-900/55 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="glass-card bg-white rounded-3xl w-full max-w-sm p-5 space-y-4 animate-pop">
+      <div class="flex items-center justify-between">
+        <h3 class="text-lg font-black text-slate-900 flex items-center gap-1.5">
+          <span>🔑</span> 忘記詞語？
+        </h3>
+        <button id="btn-forgot-close" type="button" class="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 font-bold flex items-center justify-center">✕</button>
+      </div>
+
+      <div id="forgot-step-pick" class="space-y-3">
+        <p class="text-xs font-bold text-slate-500">點選你的號碼（只會顯示你自己的詞語）：</p>
+        <div id="forgot-number-grid" class="grid grid-cols-4 gap-2"></div>
+      </div>
+
+      <div id="forgot-step-show" class="hidden text-center space-y-4 py-2">
+        <div class="text-sm font-bold text-slate-600">
+          <span id="forgot-selected-num" class="font-num text-teal-600 text-lg">1</span> 號玩家的詞語
+        </div>
+        <div id="forgot-word-display" class="py-5 px-4 rounded-2xl bg-teal-50 border-2 border-teal-300 text-3xl font-black text-slate-900"></div>
+        <button id="btn-forgot-done" type="button" class="btn-primary w-full h-12 rounded-xl font-bold">
+          記住了，隱藏
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 5: End-of-Game Winner Summary with 3 Distinct Celebratory Anime SVGs -->
+  <div id="modal-game-over" class="hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="glass-card bg-white rounded-3xl w-full max-w-md p-5 space-y-4 animate-pop max-h-[90dvh] flex flex-col">
+      <!-- Winner Banner + Anime Victory Illustration -->
+      <div id="gameover-banner" class="rounded-2xl p-4 text-center space-y-2">
+        <div id="gameover-anime-art" class="w-28 h-28 mx-auto anime-float" aria-hidden="true"></div>
+        <h2 id="gameover-title" class="text-2xl sm:text-3xl font-black">平民勝利！</h2>
+        <p id="gameover-subtitle" class="text-xs sm:text-sm font-bold opacity-90"></p>
+      </div>
+
+      <!-- Revealed Words -->
+      <div class="grid grid-cols-2 gap-2.5 text-center">
+        <div class="rounded-2xl bg-teal-50 border border-teal-200 p-3">
+          <div class="text-xs font-bold text-teal-700">平民詞</div>
+          <div id="gameover-civ-word" class="text-xl font-black text-slate-900 mt-0.5"></div>
+        </div>
+        <div class="rounded-2xl bg-rose-50 border border-rose-200 p-3">
+          <div class="text-xs font-bold text-rose-600">臥底詞</div>
+          <div id="gameover-und-word" class="text-xl font-black text-slate-900 mt-0.5"></div>
+        </div>
+      </div>
+
+      <!-- Full Role List -->
+      <div id="gameover-player-list" class="grid grid-cols-2 gap-2 text-sm overflow-y-auto pr-1 flex-1"></div>
+
+      <!-- Action Buttons -->
+      <div class="space-y-2 pt-1">
+        <button id="btn-next-round" type="button" class="btn-primary w-full py-3 rounded-2xl font-black text-base">
+          ▶ 下一局（自動選未玩題目）
+        </button>
+        <div class="grid grid-cols-2 gap-2">
+          <button id="btn-gameover-board" type="button" class="btn-secondary h-11 rounded-xl text-sm font-bold">
+            檢視桌面
+          </button>
+          <button id="btn-gameover-setup" type="button" class="btn-secondary h-11 rounded-xl text-sm font-bold">
+            ⚙️ 返回設定
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal 6: Generic Confirm (Leave Mid-Game / Early End / Reset History) -->
+  <div id="modal-confirm-action" class="hidden fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="glass-card bg-white rounded-3xl w-full max-w-xs p-5 text-center space-y-4 animate-pop">
+      <h3 id="confirm-action-title" class="text-lg font-black text-slate-900">確定操作？</h3>
+      <p id="confirm-action-desc" class="text-sm font-medium text-slate-500"></p>
+      <div class="grid grid-cols-2 gap-2.5">
+        <button id="btn-action-cancel" type="button" class="btn-secondary h-12 rounded-xl font-bold">取消</button>
+        <button id="btn-action-confirm" type="button" class="btn-danger h-12 rounded-xl font-bold">確定</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /**
+     * =========================================================
+     * 誰是臥底 · 團契版 (Who is the Undercover — Fellowship Edition)
+     * Single-file offline-ready classroom party game
+     * =========================================================
+     */
+
+    // 1. Pre-loaded Word Bank (10 Main + 5 Backup Sets)
+    const WORD_BANK = [
+      { id: 'main-1',  label: '第 1 題',  civilian: '祈禱',     undercover: '許願' },
+      { id: 'main-2',  label: '第 2 題',  civilian: '聖誕節',   undercover: '復活節' },
+      { id: 'main-3',  label: '第 3 題',  civilian: '牧師',     undercover: '老師' },
+      { id: 'main-4',  label: '第 4 題',  civilian: '聖經',     undercover: '字典' },
+      { id: 'main-5',  label: '第 5 題',  civilian: '唱詩歌',   undercover: '唱校歌' },
+      { id: 'main-6',  label: '第 6 題',  civilian: '奉獻',     undercover: '利是' },
+      { id: 'main-7',  label: '第 7 題',  civilian: '十字架',   undercover: '頸鏈' },
+      { id: 'main-8',  label: '第 8 題',  civilian: '天使',     undercover: '鴿子' },
+      { id: 'main-9',  label: '第 9 題',  civilian: '團契',     undercover: '派對 (Party)' },
+      { id: 'main-10', label: '第 10 題', civilian: '挪亞方舟', undercover: '動物園' },
+      { id: 'bak-1',   label: '備用 11',  civilian: '教堂',     undercover: '禮堂' },
+      { id: 'bak-2',   label: '備用 12',  civilian: '洗禮',     undercover: '游水' },
+      { id: 'bak-3',   label: '備用 13',  civilian: '五餅二魚', undercover: '自助餐' },
+      { id: 'bak-4',   label: '備用 14',  civilian: '天堂',     undercover: '主題樂園' },
+      { id: 'bak-5',   label: '備用 15',  civilian: '耶穌',     undercover: '超級英雄' }
+    ];
+
+    const STORAGE_KEY_PLAYED = 'fellowship_undercover_played_v2';
+
+    // 2. End-of-Game Celebratory Anime SVG Illustrations (#5a, #5b, #5c)
+    const VICTORY_SVGS = {
+      // (a) 平民勝利: Cheerful anime student raising both hands in victory with teal/gold sparkles
+      civilian: `
+        <svg viewBox="0 0 140 140" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="70" cy="70" r="64" fill="#ffffff" stroke="#5eead4" stroke-width="3"/>
+          <!-- Gold & Teal Sparkles -->
+          <path d="M22 28 L25 35 L32 38 L25 41 L22 48 L19 41 L12 38 L19 35 Z" fill="#f59e0b"/>
+          <path d="M118 26 L120.5 32 L126.5 34.5 L120.5 37 L118 43 L115.5 37 L109.5 34.5 L115.5 32 Z" fill="#0d9488"/>
+          <circle cx="34" cy="20" r="3.5" fill="#14b8a6"/>
+          <circle cx="106" cy="20" r="3.5" fill="#f59e0b"/>
+          <!-- Raised Victory Arms -->
+          <path d="M40 94 L24 62 C22 57 29 53 33 58 L48 84 Z" fill="#0d9488" stroke="#1e293b" stroke-width="2.4" stroke-linejoin="round"/>
+          <path d="M100 94 L116 62 C118 57 111 53 107 58 L92 84 Z" fill="#0d9488" stroke="#1e293b" stroke-width="2.4" stroke-linejoin="round"/>
+          <circle cx="27" cy="56" r="6.5" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.2"/>
+          <circle cx="113" cy="56" r="6.5" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.2"/>
+          <!-- Torso -->
+          <path d="M42 120 C44 92 52 84 70 84 C88 84 96 92 98 120 Z" fill="#0d9488" stroke="#1e293b" stroke-width="2.4"/>
+          <path d="M58 86 L70 98 L82 86" fill="#ffffff" stroke="#1e293b" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Back Hair -->
+          <path d="M40 54 C38 74 44 84 52 86 L88 86 C96 84 102 74 100 54 Z" fill="#1e293b"/>
+          <!-- Face -->
+          <path d="M46 56 C46 37 94 37 94 56 C94 74 82 84 70 84 C58 84 46 74 46 56 Z" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.4"/>
+          <!-- Blush -->
+          <ellipse cx="55" cy="67" rx="4.5" ry="2.2" fill="#fda4af" opacity="0.8"/>
+          <ellipse cx="85" cy="67" rx="4.5" ry="2.2" fill="#fda4af" opacity="0.8"/>
+          <!-- Happy Curved Anime Eyes -->
+          <path d="M54 60 Q60 53 65 60" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round"/>
+          <path d="M75 60 Q80 53 86 60" fill="none" stroke="#1e293b" stroke-width="2.8" stroke-linecap="round"/>
+          <!-- Big Joyful Smile -->
+          <path d="M62 69 Q70 79 78 69 Z" fill="#f43f5e" stroke="#1e293b" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Bangs -->
+          <path d="M42 54 C42 31 58 24 71 25 C86 26 98 35 98 54 C93 45 88 41 83 47 C80 39 73 38 69 49 C65 41 59 40 55 48 C51 42 46 46 42 54 Z" fill="#1e293b" stroke="#1e293b" stroke-width="1.8" stroke-linejoin="round"/>
+          <path d="M55 33 Q70 28 85 33" fill="none" stroke="#64748b" stroke-width="2.2" stroke-linecap="round"/>
+        </svg>
+      `,
+      // (b) 臥底勝利: Cool smug anime undercover character adjusting sunglasses with a smirk
+      undercover: `
+        <svg viewBox="0 0 140 140" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="70" cy="70" r="64" fill="#fff1f2" stroke="#fda4af" stroke-width="3"/>
+          <!-- Dramatic Sparkle -->
+          <path d="M110 26 L113 33 L120 36 L113 39 L110 46 L107 39 L100 36 L107 33 Z" fill="#f43f5e"/>
+          <!-- Trench Coat Shoulders -->
+          <path d="M36 122 C38 92 50 84 70 84 C90 84 102 92 104 122 Z" fill="#1e293b" stroke="#0f172a" stroke-width="2.4"/>
+          <path d="M56 85 L70 104 L84 85" fill="#f43f5e" stroke="#0f172a" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Face -->
+          <path d="M46 56 C46 37 94 37 94 56 C94 74 82 84 70 84 C58 84 46 74 46 56 Z" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.4"/>
+          <!-- Spiky Cool Hair -->
+          <path d="M40 56 C38 30 56 20 72 22 C88 24 102 34 100 56 C95 46 90 42 85 48 C81 38 74 37 69 49 C64 40 57 39 52 49 C47 42 43 46 40 56 Z" fill="#0f172a" stroke="#0f172a" stroke-width="1.8" stroke-linejoin="round"/>
+          <!-- Cool Sunglasses with Glint -->
+          <g>
+            <rect x="49" y="52" width="19" height="12" rx="4" fill="#0f172a" stroke="#f43f5e" stroke-width="2"/>
+            <rect x="72" y="52" width="19" height="12" rx="4" fill="#0f172a" stroke="#f43f5e" stroke-width="2"/>
+            <line x1="68" y1="57" x2="72" y2="57" stroke="#f43f5e" stroke-width="2.4"/>
+            <line x1="53" y1="55" x2="59" y2="61" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+            <line x1="76" y1="55" x2="82" y2="61" stroke="#ffffff" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+          </g>
+          <!-- Smug Smirk -->
+          <path d="M62 73 Q72 76 79 70" fill="none" stroke="#1e293b" stroke-width="2.5" stroke-linecap="round"/>
+          <!-- Hand Adjusting Sunglasses -->
+          <path d="M92 61 L106 66 L102 74 L90 68 Z" fill="#ffe4d1" stroke="#1e293b" stroke-width="2" stroke-linejoin="round"/>
+        </svg>
+      `,
+      // (c) 白板勝利: Excited anime student holding a glowing blank card with stars
+      blank: `
+        <svg viewBox="0 0 140 140" class="w-full h-full drop-shadow-sm" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="70" cy="70" r="64" fill="#fffbeb" stroke="#fcd34d" stroke-width="3"/>
+          <!-- Golden Stars -->
+          <path d="M24 30 L27 37 L34 40 L27 43 L24 50 L21 43 L14 40 L21 37 Z" fill="#f59e0b"/>
+          <path d="M116 24 L118.5 30 L124.5 32.5 L118.5 35 L116 41 L113.5 35 L107.5 32.5 L113.5 30 Z" fill="#f59e0b"/>
+          <!-- Hoodie Body -->
+          <path d="M36 120 C38 92 50 84 70 84 C90 84 102 92 104 120 Z" fill="#f59e0b" stroke="#1e293b" stroke-width="2.4"/>
+          <!-- Face -->
+          <path d="M46 54 C46 35 94 35 94 54 C94 72 82 82 70 82 C58 82 46 72 46 54 Z" fill="#ffe4d1" stroke="#1e293b" stroke-width="2.4"/>
+          <!-- Starry Excited Anime Eyes -->
+          <ellipse cx="59" cy="57" rx="4.5" ry="5.5" fill="#1e293b"/>
+          <path d="M59 54 L60 56.5 L62.5 57.5 L60 58.5 L59 61 L58 58.5 L55.5 57.5 L58 56.5 Z" fill="#fde047"/>
+          <ellipse cx="81" cy="57" rx="4.5" ry="5.5" fill="#1e293b"/>
+          <path d="M81 54 L82 56.5 L84.5 57.5 L82 58.5 L81 61 L80 58.5 L77.5 57.5 L80 56.5 Z" fill="#fde047"/>
+          <!-- Blush -->
+          <ellipse cx="53" cy="64" rx="4" ry="2" fill="#fda4af" opacity="0.8"/>
+          <ellipse cx="87" cy="64" rx="4" ry="2" fill="#fda4af" opacity="0.8"/>
+          <!-- Excited Open Smile -->
+          <path d="M63 68 Q70 76 77 68 Z" fill="#f43f5e" stroke="#1e293b" stroke-width="1.8" stroke-linejoin="round"/>
+          <!-- Hair -->
+          <path d="M42 52 C42 29 58 22 71 23 C86 24 98 33 98 52 C93 43 88 39 83 45 C80 37 73 36 69 47 C65 39 59 38 55 46 C51 40 46 44 42 52 Z" fill="#334155" stroke="#1e293b" stroke-width="2" stroke-linejoin="round"/>
+          <!-- Glowing Blank Card Held in Front -->
+          <g transform="translate(46, 86) rotate(-5)">
+            <rect x="0" y="0" width="48" height="34" rx="7" fill="#ffffff" stroke="#f59e0b" stroke-width="2.8"/>
+            <text x="24" y="22" text-anchor="middle" font-family="Noto Sans TC, sans-serif" font-size="13" font-weight="900" fill="#d97706">白板</text>
+          </g>
+        </svg>
+      `
+    };
+
+    // 3. Application State
+    const state = {
+      phase: 'setup', // 'setup' | 'deal' | 'play'
+      soundEnabled: true,
+
+      // Setup config
+      selectedSetId: 'main-1',
+      customPair: null,
+      swapWords: false,
+      showWordPreview: false,
+      totalPlayers: 6,
+      undercoverCount: 1,
+      blankCount: 1,
+      playedIds: new Set(),
+
+      // Active Round Data
+      roundLabel: '第 1 題',
+      activeCivilianWord: '',
+      activeUndercoverWord: '',
+      players: [], // [{ num: 1, role: 'civilian'|'undercover'|'blank', word: '...', eliminated: false }]
+      firstSpeaker: 1,
+
+      // Dealing state
+      dealIndex: 0,
+      dealRevealed: false,
+
+      // Play & Vote state
+      elimHistory: [],
+      pendingElimIndex: null,
+      winnerInfo: null,
+      pendingConfirmCallback: null,
+
+      // Timer state
+      timerPreset: 10,
+      timerRemaining: 10,
+      timerRunning: false,
+      timerInterval: null
+    };
+
+    // 4. Gentle Web Audio API Synthesizer (100% offline)
+    const soundFX = (() => {
+      let ctx = null;
+      function getCtx() {
+        if (!state.soundEnabled) return null;
+        try {
+          if (!ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            if (AudioCtx) ctx = new AudioCtx();
+          }
+          if (ctx && ctx.state === 'suspended') ctx.resume();
+          return ctx;
+        } catch (e) {
+          return null;
+        }
+      }
+
+      function playTone(freq, duration, type = 'sine', volume = 0.08, delay = 0) {
+        const c = getCtx();
+        if (!c) return;
+        try {
+          const osc = c.createOscillator();
+          const gain = c.createGain();
+          osc.type = type;
+          osc.frequency.setValueAtTime(freq, c.currentTime + delay);
+          gain.gain.setValueAtTime(0.0001, c.currentTime + delay);
+          gain.gain.exponentialRampToValueAtTime(volume, c.currentTime + delay + 0.015);
+          gain.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + delay + duration);
+          osc.connect(gain);
+          gain.connect(c.destination);
+          osc.start(c.currentTime + delay);
+          osc.stop(c.currentTime + delay + duration + 0.02);
+        } catch (e) {
+          // Graceful audio fallback
+        }
+      }
+
+      return {
+        click() { playTone(520, 0.06, 'sine', 0.05); },
+        reveal() {
+          playTone(587.33, 0.09, 'triangle', 0.07, 0);
+          playTone(880, 0.14, 'triangle', 0.07, 0.07);
+        },
+        beep() { playTone(740, 0.09, 'sine', 0.08); },
+        timeUp() {
+          playTone(440, 0.14, 'triangle', 0.1, 0);
+          playTone(330, 0.25, 'triangle', 0.1, 0.14);
+        },
+        eliminate(role) {
+          if (role === 'civilian') {
+            playTone(392, 0.12, 'sine', 0.08, 0);
+            playTone(311, 0.22, 'sine', 0.08, 0.11);
+          } else {
+            playTone(523.25, 0.1, 'triangle', 0.09, 0);
+            playTone(659.25, 0.1, 'triangle', 0.09, 0.09);
+            playTone(783.99, 0.2, 'triangle', 0.09, 0.18);
+          }
+        },
+        win() {
+          [523.25, 659.25, 783.99, 1046.5].forEach((n, i) => playTone(n, 0.18, 'triangle', 0.09, i * 0.09));
+        }
+      };
+    })();
+
+    // 5. Safe localStorage Helpers
+    function loadPlayedSets() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY_PLAYED);
+        if (raw) {
+          const arr = JSON.parse(raw);
+          if (Array.isArray(arr)) arr.forEach(id => state.playedIds.add(id));
+        }
+      } catch (e) {
+        // Fallback to in-memory
+      }
+    }
+
+    function savePlayedSets() {
+      try {
+        localStorage.setItem(STORAGE_KEY_PLAYED, JSON.stringify(Array.from(state.playedIds)));
+      } catch (e) {
+        // Ignore storage errors
+      }
+    }
+
+    // 6. DOM References
+    const el = {
+      phaseSetup: document.getElementById('phase-setup'),
+      phaseDeal: document.getElementById('phase-deal'),
+      phasePlay: document.getElementById('phase-play'),
+
+      btnSoundToggle: document.getElementById('btn-sound-toggle'),
+      soundIcon: document.getElementById('sound-icon'),
+      soundLabel: document.getElementById('sound-label'),
+
+      toastBanner: document.getElementById('toast-banner'),
+      toastInner: document.getElementById('toast-inner'),
+
+      wordSelect: document.getElementById('word-set-select'),
+      playedCounter: document.getElementById('played-counter'),
+      btnResetPlayed: document.getElementById('btn-reset-played'),
+      wordPreviewLocked: document.getElementById('word-preview-locked'),
+      swapStatusPill: document.getElementById('swap-status-pill'),
+      wordPreviewBox: document.getElementById('word-preview-box'),
+      previewCivilian: document.getElementById('preview-civilian'),
+      previewUndercover: document.getElementById('preview-undercover'),
+      btnTogglePreview: document.getElementById('btn-toggle-preview'),
+      previewBtnText: document.getElementById('preview-btn-text'),
+      btnRandomSet: document.getElementById('btn-random-set'),
+      btnSwapWords: document.getElementById('btn-swap-words'),
+      swapBtnText: document.getElementById('swap-btn-text'),
+      btnCustomWord: document.getElementById('btn-custom-word'),
+
+      valTotal: document.getElementById('val-total'),
+      valUndercover: document.getElementById('val-undercover'),
+      valBlank: document.getElementById('val-blank'),
+      sumCivilian: document.getElementById('sum-civilian'),
+      sumUndercover: document.getElementById('sum-undercover'),
+      sumBlank: document.getElementById('sum-blank'),
+      btnStartDeal: document.getElementById('btn-start-deal'),
+
+      btnDealBack: document.getElementById('btn-deal-back'),
+      dealProgressText: document.getElementById('deal-progress-text'),
+      dealProgressBar: document.getElementById('deal-progress-bar'),
+      dealPlayerNum: document.getElementById('deal-player-num'),
+      dealStateHidden: document.getElementById('deal-state-hidden'),
+      dealStateRevealed: document.getElementById('deal-state-revealed'),
+      dealWordNormal: document.getElementById('deal-word-normal'),
+      dealWordText: document.getElementById('deal-word-text'),
+      dealWordBlank: document.getElementById('deal-word-blank'),
+      btnRevealWord: document.getElementById('btn-reveal-word'),
+      btnNextPlayer: document.getElementById('btn-next-player'),
+
+      hudSpeakerText: document.getElementById('hud-speaker-text'),
+      hudRoundLabel: document.getElementById('hud-round-label'),
+      hudAlivePill: document.getElementById('hud-alive-pill'),
+      btnRerollSpeaker: document.getElementById('btn-reroll-speaker'),
+      btnForgotWord: document.getElementById('btn-forgot-word'),
+      btnHostPeek: document.getElementById('btn-host-peek'),
+      btnEarlyEnd: document.getElementById('btn-early-end'),
+      timerDisplay: document.getElementById('timer-display'),
+      timerBar: document.getElementById('timer-bar'),
+      btnTimerToggle: document.getElementById('btn-timer-toggle'),
+      btnTimerReset: document.getElementById('btn-timer-reset'),
+      playerGrid: document.getElementById('player-grid'),
+      btnUndoElim: document.getElementById('btn-undo-elim'),
+      btnReopenResult: document.getElementById('btn-reopen-result'),
+      btnPlayBackSetup: document.getElementById('btn-play-back-setup'),
+
+      modalCustomWord: document.getElementById('modal-custom-word'),
+      inputCustomCivilian: document.getElementById('input-custom-civilian'),
+      inputCustomUndercover: document.getElementById('input-custom-undercover'),
+      customWordError: document.getElementById('custom-word-error'),
+      btnCustomCancel: document.getElementById('btn-custom-cancel'),
+      btnCustomSave: document.getElementById('btn-custom-save'),
+
+      modalConfirmElim: document.getElementById('modal-confirm-elim'),
+      elimModalNum: document.getElementById('elim-modal-num'),
+      elimModalTitleNum: document.getElementById('elim-modal-title-num'),
+      btnElimCancel: document.getElementById('btn-elim-cancel'),
+      btnElimConfirm: document.getElementById('btn-elim-confirm'),
+
+      modalHostPeek: document.getElementById('modal-host-peek'),
+      btnHostClose: document.getElementById('btn-host-close'),
+      hostPeekLocked: document.getElementById('host-peek-locked'),
+      btnHostUnlock: document.getElementById('btn-host-unlock'),
+      hostPeekContent: document.getElementById('host-peek-content'),
+      hostCivWord: document.getElementById('host-civ-word'),
+      hostUndWord: document.getElementById('host-und-word'),
+      hostPlayerList: document.getElementById('host-player-list'),
+
+      modalForgotWord: document.getElementById('modal-forgot-word'),
+      btnForgotClose: document.getElementById('btn-forgot-close'),
+      forgotStepPick: document.getElementById('forgot-step-pick'),
+      forgotNumberGrid: document.getElementById('forgot-number-grid'),
+      forgotStepShow: document.getElementById('forgot-step-show'),
+      forgotSelectedNum: document.getElementById('forgot-selected-num'),
+      forgotWordDisplay: document.getElementById('forgot-word-display'),
+      btnForgotDone: document.getElementById('btn-forgot-done'),
+
+      modalGameOver: document.getElementById('modal-game-over'),
+      gameoverBanner: document.getElementById('gameover-banner'),
+      gameoverAnimeArt: document.getElementById('gameover-anime-art'),
+      gameoverTitle: document.getElementById('gameover-title'),
+      gameoverSubtitle: document.getElementById('gameover-subtitle'),
+      gameoverCivWord: document.getElementById('gameover-civ-word'),
+      gameoverUndWord: document.getElementById('gameover-und-word'),
+      gameoverPlayerList: document.getElementById('gameover-player-list'),
+      btnNextRound: document.getElementById('btn-next-round'),
+      btnGameoverBoard: document.getElementById('btn-gameover-board'),
+      btnGameoverSetup: document.getElementById('btn-gameover-setup'),
+
+      modalConfirmAction: document.getElementById('modal-confirm-action'),
+      confirmActionTitle: document.getElementById('confirm-action-title'),
+      confirmActionDesc: document.getElementById('confirm-action-desc'),
+      btnActionCancel: document.getElementById('btn-action-cancel'),
+      btnActionConfirm: document.getElementById('btn-action-confirm')
+    };
+
+    // 7. Utility Functions
+    function getSelectedWordPair() {
+      let base;
+      if (state.selectedSetId === 'custom' && state.customPair) {
+        base = { label: '自訂題目', civilian: state.customPair.civilian, undercover: state.customPair.undercover };
+      } else {
+        base = WORD_BANK.find(w => w.id === state.selectedSetId) || WORD_BANK[0];
+      }
+      if (state.swapWords) {
+        return { label: base.label, civilian: base.undercover, undercover: base.civilian };
+      }
+      return { label: base.label, civilian: base.civilian, undercover: base.undercover };
+    }
+
+    function roleMeta(role) {
+      if (role === 'undercover') {
+        return {
+          name: '臥底',
+          badgeClass: 'bg-rose-100 text-rose-700 border-rose-300',
+          toastClass: 'bg-rose-500 text-white border-rose-300'
+        };
+      }
+      if (role === 'blank') {
+        return {
+          name: '白板',
+          badgeClass: 'bg-amber-100 text-amber-800 border-amber-300',
+          toastClass: 'bg-amber-500 text-white border-amber-200'
+        };
+      }
+      return {
+        name: '平民',
+        badgeClass: 'bg-teal-100 text-teal-800 border-teal-300',
+        toastClass: 'bg-teal-600 text-white border-teal-300'
+      };
+    }
+
+    let toastTimeout = null;
+    function showToast(message, styleClass = 'bg-slate-800 text-white border-slate-600', duration = 2400) {
+      if (toastTimeout) clearTimeout(toastTimeout);
+      el.toastInner.className = `animate-toast rounded-2xl px-4 py-3.5 shadow-xl border-2 flex items-center justify-center gap-2 text-center font-black text-base sm:text-lg ${styleClass}`;
+      el.toastInner.textContent = message;
+      el.toastBanner.classList.remove('hidden');
+      toastTimeout = setTimeout(() => {
+        el.toastBanner.classList.add('hidden');
+      }, duration);
+    }
+
+    function openConfirmAction(title, desc, confirmText, onConfirm) {
+      el.confirmActionTitle.textContent = title;
+      el.confirmActionDesc.textContent = desc;
+      el.btnActionConfirm.textContent = confirmText;
+      state.pendingConfirmCallback = onConfirm;
+      el.modalConfirmAction.classList.remove('hidden');
+    }
+
+    function switchPhase(phase) {
+      state.phase = phase;
+      el.phaseSetup.classList.toggle('hidden', phase !== 'setup');
+      el.phaseDeal.classList.toggle('hidden', phase !== 'deal');
+      el.phasePlay.classList.toggle('hidden', phase !== 'play');
+      if (phase !== 'play') stopTimer();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    /**
+     * STRICT FIRST-SPEAKER RULE:
+     * Selects a random alive player whose role is strictly !== 'blank'.
+     */
+    function pickFirstSpeaker(excludeNum = null) {
+      const eligible = state.players.filter(p => !p.eliminated && p.role !== 'blank');
+      if (eligible.length === 0) return null;
+      let pool = eligible;
+      if (excludeNum !== null && eligible.length > 1) {
+        pool = eligible.filter(p => p.num !== excludeNum);
+      }
+      const chosen = pool[Math.floor(Math.random() * pool.length)];
+      return chosen.num;
+    }
+
+    // Ensure Civilians strictly outnumber Undercover + Blank AND Civilians >= 2
+    function clampRoleCounts() {
+      state.totalPlayers = Math.max(4, Math.min(14, state.totalPlayers));
+      const maxNonCiv = Math.min(
+        Math.floor((state.totalPlayers - 1) / 2),
+        state.totalPlayers - 2
+      );
+
+      state.undercoverCount = Math.max(1, Math.min(3, state.undercoverCount));
+      state.blankCount = Math.max(0, Math.min(2, state.blankCount));
+
+      while (state.undercoverCount + state.blankCount > maxNonCiv) {
+        if (state.blankCount > 0) {
+          state.blankCount--;
+        } else if (state.undercoverCount > 1) {
+          state.undercoverCount--;
+        } else {
+          break;
+        }
+      }
+    }
+
+    // 8. Setup UI Rendering
+    function renderWordSelect() {
+      const currentVal = state.selectedSetId;
+      el.wordSelect.innerHTML = '';
+
+      const mainGroup = document.createElement('optgroup');
+      mainGroup.label = '精選 10 題';
+      WORD_BANK.slice(0, 10).forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = state.playedIds.has(item.id) ? `${item.label}  ✓ 已玩` : item.label;
+        mainGroup.appendChild(opt);
+      });
+      el.wordSelect.appendChild(mainGroup);
+
+      const bakGroup = document.createElement('optgroup');
+      bakGroup.label = '備用題庫（5 題）';
+      WORD_BANK.slice(10).forEach(item => {
+        const opt = document.createElement('option');
+        opt.value = item.id;
+        opt.textContent = state.playedIds.has(item.id) ? `${item.label}  ✓ 已玩` : item.label;
+        bakGroup.appendChild(opt);
+      });
+      el.wordSelect.appendChild(bakGroup);
+
+      if (state.customPair) {
+        const customOpt = document.createElement('option');
+        customOpt.value = 'custom';
+        customOpt.textContent = '✏️ 自訂題目';
+        el.wordSelect.appendChild(customOpt);
+      }
+
+      el.wordSelect.value = currentVal;
+
+      const playedBuiltIn = WORD_BANK.filter(w => state.playedIds.has(w.id)).length;
+      el.playedCounter.textContent = `已玩 ${playedBuiltIn} / ${WORD_BANK.length} 題`;
+    }
+
+    function renderSetup() {
+      clampRoleCounts();
+      renderWordSelect();
+
+      const pair = getSelectedWordPair();
+      el.previewCivilian.textContent = pair.civilian;
+      el.previewUndercover.textContent = pair.undercover;
+      el.wordPreviewLocked.classList.toggle('hidden', state.showWordPreview);
+      el.wordPreviewBox.classList.toggle('hidden', !state.showWordPreview);
+      el.previewBtnText.textContent = state.showWordPreview ? '隱藏題目' : '顯示題目';
+      el.swapStatusPill.classList.toggle('hidden', !state.swapWords);
+
+      if (state.swapWords) {
+        el.btnSwapWords.className = 'h-11 rounded-xl px-2 text-xs sm:text-sm font-bold flex items-center justify-center gap-1 bg-teal-600 text-white border border-teal-600 transition';
+        el.swapBtnText.textContent = '已對調';
+      } else {
+        el.btnSwapWords.className = 'btn-secondary h-11 rounded-xl px-2 text-xs sm:text-sm font-bold flex items-center justify-center gap-1';
+        el.swapBtnText.textContent = '對調詞語';
+      }
+
+      const civCount = state.totalPlayers - state.undercoverCount - state.blankCount;
+      el.valTotal.textContent = state.totalPlayers;
+      el.valUndercover.textContent = state.undercoverCount;
+      el.valBlank.textContent = state.blankCount;
+      el.sumCivilian.textContent = civCount;
+      el.sumUndercover.textContent = state.undercoverCount;
+      el.sumBlank.textContent = state.blankCount;
+    }
+
+    function pickRandomUnplayedSet(notify = true) {
+      const unplayed = WORD_BANK.filter(w => !state.playedIds.has(w.id));
+      let chosen;
+      if (unplayed.length > 0) {
+        const pool = unplayed.length > 1 ? unplayed.filter(w => w.id !== state.selectedSetId) : unplayed;
+        chosen = pool[Math.floor(Math.random() * pool.length)];
+      } else {
+        const pool = WORD_BANK.filter(w => w.id !== state.selectedSetId);
+        chosen = pool[Math.floor(Math.random() * pool.length)];
+        if (notify) showToast('全部 15 題都玩過了！已隨機挑選一題', 'bg-teal-600 text-white border-teal-300', 2200);
+      }
+      state.selectedSetId = chosen.id;
+      state.swapWords = false;
+      state.showWordPreview = false;
+      renderSetup();
+      if (notify && unplayed.length > 0) {
+        showToast(`已選出：${chosen.label}`, 'bg-teal-600 text-white border-teal-300', 1500);
+      }
+    }
+
+    // 9. Start Dealing & Role Assignment
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function startDealing() {
+      soundFX.click();
+      const pair = getSelectedWordPair();
+      state.roundLabel = pair.label;
+      state.activeCivilianWord = pair.civilian;
+      state.activeUndercoverWord = pair.undercover;
+
+      if (state.selectedSetId !== 'custom') {
+        state.playedIds.add(state.selectedSetId);
+        savePlayedSets();
+      }
+
+      state.showWordPreview = false;
+
+      const roles = [];
+      const civCount = state.totalPlayers - state.undercoverCount - state.blankCount;
+      for (let i = 0; i < civCount; i++) roles.push('civilian');
+      for (let i = 0; i < state.undercoverCount; i++) roles.push('undercover');
+      for (let i = 0; i < state.blankCount; i++) roles.push('blank');
+
+      const shuffled = shuffleArray(roles);
+      state.players = shuffled.map((role, idx) => ({
+        num: idx + 1,
+        role,
+        word: role === 'civilian' ? pair.civilian : (role === 'undercover' ? pair.undercover : ''),
+        eliminated: false
+      }));
+
+      // STRICT RULE: First speaker is strictly chosen from non-Blank players
+      state.firstSpeaker = pickFirstSpeaker();
+      state.dealIndex = 0;
+      state.dealRevealed = false;
+      state.elimHistory = [];
+      state.winnerInfo = null;
+
+      renderDealScreen();
+      switchPhase('deal');
+    }
+
+    // 10. Phase 2: Pass-the-Device Dealing
+    function renderDealScreen() {
+      const total = state.players.length;
+      const current = state.players[state.dealIndex];
+      const step = state.dealIndex + 1;
+
+      el.dealProgressText.textContent = `${step} / ${total}`;
+      el.dealProgressBar.style.width = `${Math.round((step / total) * 100)}%`;
+      el.dealPlayerNum.textContent = current.num;
+
+      if (!state.dealRevealed) {
+        el.dealStateHidden.classList.remove('hidden');
+        el.dealStateRevealed.classList.add('hidden');
+        el.dealWordText.textContent = '';
+      } else {
+        el.dealStateHidden.classList.add('hidden');
+        el.dealStateRevealed.classList.remove('hidden');
+
+        if (current.role === 'blank') {
+          el.dealWordNormal.classList.add('hidden');
+          el.dealWordBlank.classList.remove('hidden');
+        } else {
+          el.dealWordBlank.classList.add('hidden');
+          el.dealWordNormal.classList.remove('hidden');
+          el.dealWordText.textContent = current.word;
+        }
+
+        el.btnNextPlayer.textContent = (step === total)
+          ? '全部已查看，開始討論！'
+          : '記住了，隱藏並傳給下一位';
+      }
+    }
+
+    // 11. Phase 3: Discussion, Timer & Voting
+    function enterPlayPhase() {
+      resetTimer(state.timerPreset);
+      renderPlayScreen();
+      switchPhase('play');
+    }
+
+    function renderPlayScreen() {
+      const aliveCount = state.players.filter(p => !p.eliminated).length;
+      el.hudRoundLabel.textContent = state.roundLabel;
+      el.hudAlivePill.textContent = `存活：${aliveCount} 人`;
+      el.hudSpeakerText.textContent = state.firstSpeaker
+        ? `🎤 本局先講：${state.firstSpeaker} 號玩家`
+        : '🎤 討論進行中';
+
+      el.btnUndoElim.disabled = state.elimHistory.length === 0;
+      el.btnReopenResult.classList.toggle('hidden', !state.winnerInfo);
+
+      el.playerGrid.innerHTML = '';
+      state.players.forEach((p, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+
+        if (!p.eliminated) {
+          btn.className = 'player-card-active rounded-2xl p-4 flex flex-col items-center justify-center gap-1.5 min-h-[112px] cursor-pointer';
+          btn.innerHTML = `
+            <div class="font-num text-3xl sm:text-4xl font-bold text-slate-900 leading-none">
+              ${p.num}<span class="text-lg font-sans font-bold text-teal-600 ml-0.5">號</span>
+            </div>
+            <span class="text-xs font-bold text-teal-700 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-200">
+              點擊投出
+            </span>
+          `;
+          btn.addEventListener('click', () => {
+            if (state.winnerInfo) {
+              openGameOverModal();
+              return;
+            }
+            soundFX.click();
+            openElimModal(idx);
+          });
+        } else {
+          const meta = roleMeta(p.role);
+          btn.className = 'player-card-eliminated rounded-2xl p-4 border-2 flex flex-col items-center justify-center gap-1.5 min-h-[112px] cursor-default';
+          btn.disabled = true;
+          btn.innerHTML = `
+            <div class="font-num text-2xl sm:text-3xl font-bold text-slate-400 line-through leading-none">
+              ${p.num}<span class="text-base font-sans font-bold ml-0.5">號</span>
+            </div>
+            <span class="text-xs font-black px-2.5 py-0.5 rounded-full border ${meta.badgeClass}">
+              ${meta.name}
+            </span>
+          `;
+        }
+
+        el.playerGrid.appendChild(btn);
+      });
+    }
+
+    function openElimModal(playerIdx) {
+      state.pendingElimIndex = playerIdx;
+      const num = state.players[playerIdx].num;
+      el.elimModalNum.textContent = num;
+      el.elimModalTitleNum.textContent = num;
+      el.modalConfirmElim.classList.remove('hidden');
+    }
+
+    function confirmElimination() {
+      if (state.pendingElimIndex === null) return;
+      const idx = state.pendingElimIndex;
+      state.pendingElimIndex = null;
+      el.modalConfirmElim.classList.add('hidden');
+
+      const player = state.players[idx];
+      if (!player || player.eliminated) return;
+
+      player.eliminated = true;
+      state.elimHistory.push(idx);
+
+      const meta = roleMeta(player.role);
+      soundFX.eliminate(player.role);
+      showToast(`${player.num} 號玩家是【${meta.name}】！`, meta.toastClass, 2500);
+
+      // If the eliminated player was the current first speaker, pick a new alive non-Blank speaker
+      if (state.firstSpeaker === player.num) {
+        const nextSpeaker = pickFirstSpeaker();
+        if (nextSpeaker) state.firstSpeaker = nextSpeaker;
+      }
+
+      const winner = checkWinCondition();
+      state.winnerInfo = winner;
+      renderPlayScreen();
+
+      if (winner) {
+        stopTimer();
+        setTimeout(() => {
+          soundFX.win();
+          openGameOverModal();
+        }, 700);
+      }
+    }
+
+    function undoElimination() {
+      if (state.elimHistory.length === 0) return;
+      soundFX.click();
+      const lastIdx = state.elimHistory.pop();
+      state.players[lastIdx].eliminated = false;
+      state.winnerInfo = checkWinCondition();
+      renderPlayScreen();
+      showToast(`已復原 ${state.players[lastIdx].num} 號玩家`, 'bg-slate-800 text-white border-slate-600', 1600);
+    }
+
+    function checkWinCondition() {
+      const alive = state.players.filter(p => !p.eliminated);
+      const aliveCiv = alive.filter(p => p.role === 'civilian').length;
+      const aliveUnd = alive.filter(p => p.role === 'undercover').length;
+      const aliveBlk = alive.filter(p => p.role === 'blank').length;
+      const aliveBad = aliveUnd + aliveBlk;
+
+      // 1. 平民勝利: All Undercovers & Blanks eliminated
+      if (aliveBad === 0) {
+        return {
+          artKey: 'civilian',
+          title: '平民勝利！',
+          subtitle: '所有臥底與白板已被成功找出！',
+          bannerClass: 'bg-teal-50 border-2 border-teal-300 text-teal-900'
+        };
+      }
+
+      // 2. Final 2 or Parity reached
+      if (alive.length <= 2 || aliveCiv <= aliveBad) {
+        if (aliveBlk > 0 && aliveUnd === 0) {
+          return {
+            artKey: 'blank',
+            title: '白板勝利！',
+            subtitle: '白板逆襲成功，撐到最後！',
+            bannerClass: 'bg-amber-50 border-2 border-amber-300 text-amber-900'
+          };
+        }
+        if (aliveUnd > 0 && aliveBlk === 0) {
+          return {
+            artKey: 'undercover',
+            title: '臥底勝利！',
+            subtitle: '臥底成功隱藏身份到最後！',
+            bannerClass: 'bg-rose-50 border-2 border-rose-300 text-rose-900'
+          };
+        }
+        // Both Undercover & Blank survived to final 2 / parity
+        return {
+          artKey: 'blank',
+          title: '臥底與白板勝利！',
+          subtitle: '臥底與白板成功逆襲，平民人數已被追平！',
+          bannerClass: 'bg-amber-50 border-2 border-amber-300 text-amber-900'
+        };
+      }
+
+      return null;
+    }
+
+    function renderRoleList(container) {
+      container.innerHTML = '';
+      state.players.forEach(p => {
+        const meta = roleMeta(p.role);
+        const item = document.createElement('div');
+        item.className = 'flex items-center justify-between px-3 py-2 rounded-xl bg-slate-50 border border-slate-200';
+        item.innerHTML = `
+          <span class="font-num font-bold text-slate-800 ${p.eliminated ? 'line-through opacity-60' : ''}">${p.num} 號</span>
+          <span class="text-xs font-black px-2 py-0.5 rounded-full border ${meta.badgeClass}">${meta.name}</span>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    function openGameOverModal() {
+      if (!state.winnerInfo) return;
+      const w = state.winnerInfo;
+      el.gameoverBanner.className = `rounded-2xl p-4 text-center space-y-1.5 ${w.bannerClass}`;
+      el.gameoverAnimeArt.innerHTML = VICTORY_SVGS[w.artKey] || VICTORY_SVGS.civilian;
+      el.gameoverTitle.textContent = w.title;
+      el.gameoverSubtitle.textContent = w.subtitle;
+      el.gameoverCivWord.textContent = state.activeCivilianWord;
+      el.gameoverUndWord.textContent = state.activeUndercoverWord;
+      renderRoleList(el.gameoverPlayerList);
+      el.modalGameOver.classList.remove('hidden');
+    }
+
+    // 12. Speaking Timer Logic
+    function updateTimerUI() {
+      el.timerDisplay.textContent = state.timerRemaining;
+      const pct = Math.max(0, Math.min(100, (state.timerRemaining / state.timerPreset) * 100));
+      el.timerBar.style.width = `${pct}%`;
+
+      const isUrgent = state.timerRemaining <= 3 && state.timerRemaining > 0 && state.timerRunning;
+      el.timerDisplay.classList.toggle('timer-urgent', isUrgent);
+      if (state.timerRemaining <= 3) {
+        el.timerBar.classList.remove('bg-teal-500');
+        el.timerBar.classList.add('bg-rose-500');
+      } else {
+        el.timerBar.classList.remove('bg-rose-500');
+        el.timerBar.classList.add('bg-teal-500');
+      }
+
+      el.btnTimerToggle.textContent = state.timerRunning ? '暫停' : '開始';
+
+      document.querySelectorAll('.timer-preset-btn').forEach(btn => {
+        const val = Number(btn.dataset.timerPreset);
+        if (val === state.timerPreset) {
+          btn.className = 'timer-preset-btn h-8 px-2.5 rounded-lg text-xs font-num font-bold border transition bg-teal-600 text-white border-teal-600';
+        } else {
+          btn.className = 'timer-preset-btn h-8 px-2.5 rounded-lg text-xs font-num font-bold border transition bg-white text-slate-600 border-slate-300';
+        }
+      });
+    }
+
+    function stopTimer() {
+      state.timerRunning = false;
+      if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+      }
+      updateTimerUI();
+    }
+
+    function resetTimer(preset = state.timerPreset) {
+      stopTimer();
+      state.timerPreset = preset;
+      state.timerRemaining = preset;
+      updateTimerUI();
+    }
+
+    function toggleTimer() {
+      soundFX.click();
+      if (state.timerRunning) {
+        stopTimer();
+        return;
+      }
+      if (state.timerRemaining <= 0) state.timerRemaining = state.timerPreset;
+      state.timerRunning = true;
+      updateTimerUI();
+
+      state.timerInterval = setInterval(() => {
+        state.timerRemaining--;
+        if (state.timerRemaining === 3 || state.timerRemaining === 2 || state.timerRemaining === 1) {
+          soundFX.beep();
+        }
+        if (state.timerRemaining <= 0) {
+          state.timerRemaining = 0;
+          stopTimer();
+          soundFX.timeUp();
+          showToast('⏰ 時間到！下一位發言', 'bg-rose-500 text-white border-rose-300', 1800);
+        } else {
+          updateTimerUI();
+        }
+      }, 1000);
+    }
+
+    // 13. Host Peek & Forgot Word Modals
+    function openHostPeekModal() {
+      soundFX.click();
+      el.hostPeekLocked.classList.remove('hidden');
+      el.hostPeekContent.classList.add('hidden');
+      el.hostCivWord.textContent = state.activeCivilianWord;
+      el.hostUndWord.textContent = state.activeUndercoverWord;
+      renderRoleList(el.hostPlayerList);
+      el.modalHostPeek.classList.remove('hidden');
+    }
+
+    function openForgotWordModal() {
+      soundFX.click();
+      el.forgotStepPick.classList.remove('hidden');
+      el.forgotStepShow.classList.add('hidden');
+      el.forgotNumberGrid.innerHTML = '';
+
+      state.players.forEach(p => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn-teal-soft h-12 rounded-xl font-num font-bold text-lg';
+        btn.textContent = `${p.num}號`;
+        btn.addEventListener('click', () => {
+          soundFX.reveal();
+          el.forgotSelectedNum.textContent = p.num;
+          if (p.role === 'blank') {
+            el.forgotWordDisplay.className = 'py-5 px-4 rounded-2xl bg-amber-50 border-2 border-amber-300 text-2xl font-black text-amber-800';
+            el.forgotWordDisplay.textContent = '你是白板！（無詞語）';
+          } else {
+            el.forgotWordDisplay.className = 'py-5 px-4 rounded-2xl bg-teal-50 border-2 border-teal-300 text-3xl font-black text-slate-900';
+            el.forgotWordDisplay.textContent = p.word;
+          }
+          el.forgotStepPick.classList.add('hidden');
+          el.forgotStepShow.classList.remove('hidden');
+        });
+        el.forgotNumberGrid.appendChild(btn);
+      });
+
+      el.modalForgotWord.classList.remove('hidden');
+    }
+
+    // 14. Event Binding
+    function bindEvents() {
+      // Sound toggle
+      el.btnSoundToggle.addEventListener('click', () => {
+        state.soundEnabled = !state.soundEnabled;
+        el.soundIcon.textContent = state.soundEnabled ? '🔊' : '🔇';
+        el.soundLabel.textContent = state.soundEnabled ? '音效開' : '靜音';
+        if (state.soundEnabled) soundFX.click();
+      });
+
+      // Setup: Word select & buttons
+      el.wordSelect.addEventListener('change', (e) => {
+        soundFX.click();
+        state.selectedSetId = e.target.value;
+        state.swapWords = false;
+        renderSetup();
+      });
+
+      el.btnResetPlayed.addEventListener('click', () => {
+        soundFX.click();
+        if (state.playedIds.size === 0) {
+          showToast('目前還沒有已玩紀錄', 'bg-slate-800 text-white border-slate-600', 1400);
+          return;
+        }
+        openConfirmAction('重設已玩紀錄？', '將會清除所有「✓ 已玩」標記。', '確定重設', () => {
+          state.playedIds.clear();
+          savePlayedSets();
+          renderSetup();
+          showToast('已清除所有已玩紀錄！', 'bg-teal-600 text-white border-teal-300', 1600);
+        });
+      });
+
+      el.btnTogglePreview.addEventListener('click', () => {
+        soundFX.click();
+        state.showWordPreview = !state.showWordPreview;
+        renderSetup();
+      });
+
+      el.btnRandomSet.addEventListener('click', () => {
+        soundFX.click();
+        pickRandomUnplayedSet(true);
+      });
+
+      el.btnSwapWords.addEventListener('click', () => {
+        soundFX.click();
+        state.swapWords = !state.swapWords;
+        renderSetup();
+      });
+
+      // Custom word modal
+      el.btnCustomWord.addEventListener('click', () => {
+        soundFX.click();
+        el.inputCustomCivilian.value = state.customPair ? state.customPair.civilian : '';
+        el.inputCustomUndercover.value = state.customPair ? state.customPair.undercover : '';
+        el.customWordError.classList.add('hidden');
+        el.modalCustomWord.classList.remove('hidden');
+      });
+      el.btnCustomCancel.addEventListener('click', () => el.modalCustomWord.classList.add('hidden'));
+      el.btnCustomSave.addEventListener('click', () => {
+        const civ = el.inputCustomCivilian.value.trim();
+        const und = el.inputCustomUndercover.value.trim();
+        if (!civ || !und) {
+          el.customWordError.textContent = '請輸入平民詞與臥底詞。';
+          el.customWordError.classList.remove('hidden');
+          return;
+        }
+        if (civ === und) {
+          el.customWordError.textContent = '平民詞與臥底詞不能相同。';
+          el.customWordError.classList.remove('hidden');
+          return;
+        }
+        soundFX.click();
+        state.customPair = { civilian: civ, undercover: und };
+        state.selectedSetId = 'custom';
+        state.swapWords = false;
+        el.modalCustomWord.classList.add('hidden');
+        renderSetup();
+        showToast('已套用自訂題目！', 'bg-teal-600 text-white border-teal-300', 1600);
+      });
+
+      // Steppers
+      document.querySelectorAll('[data-stepper]').forEach(btn => {
+        btn.addEventListener('click', () => {
+          soundFX.click();
+          const type = btn.dataset.stepper;
+          const delta = Number(btn.dataset.delta);
+          if (type === 'total') state.totalPlayers += delta;
+          if (type === 'undercover') state.undercoverCount += delta;
+          if (type === 'blank') state.blankCount += delta;
+          renderSetup();
+        });
+      });
+
+      // Start Dealing
+      el.btnStartDeal.addEventListener('click', startDealing);
+
+      // Phase 2: Deal controls
+      el.btnDealBack.addEventListener('click', () => {
+        soundFX.click();
+        if (state.dealIndex === 0 && !state.dealRevealed) {
+          renderSetup();
+          switchPhase('setup');
+        } else {
+          openConfirmAction('確定返回設定？', '目前發牌進度將會清除。', '返回設定', () => {
+            renderSetup();
+            switchPhase('setup');
+          });
+        }
+      });
+
+      el.btnRevealWord.addEventListener('click', () => {
+        soundFX.reveal();
+        state.dealRevealed = true;
+        renderDealScreen();
+      });
+
+      el.btnNextPlayer.addEventListener('click', () => {
+        soundFX.click();
+        state.dealRevealed = false;
+        if (state.dealIndex < state.players.length - 1) {
+          state.dealIndex++;
+          renderDealScreen();
+        } else {
+          enterPlayPhase();
+        }
+      });
+
+      // Phase 3: Reroll First Speaker (Strictly excludes Blanks)
+      el.btnRerollSpeaker.addEventListener('click', () => {
+        soundFX.click();
+        const next = pickFirstSpeaker(state.firstSpeaker);
+        if (next) {
+          state.firstSpeaker = next;
+          renderPlayScreen();
+          showToast(`🎤 重抽完成：由 ${next} 號玩家先講！`, 'bg-teal-600 text-white border-teal-300', 1600);
+        }
+      });
+
+      // Phase 3: Timer controls
+      document.querySelectorAll('.timer-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          soundFX.click();
+          resetTimer(Number(btn.dataset.timerPreset));
+        });
+      });
+      el.btnTimerToggle.addEventListener('click', toggleTimer);
+      el.btnTimerReset.addEventListener('click', () => {
+        soundFX.click();
+        resetTimer(state.timerPreset);
+      });
+
+      // Phase 3: Early End / Reveal All
+      el.btnEarlyEnd.addEventListener('click', () => {
+        soundFX.click();
+        if (state.winnerInfo) {
+          openGameOverModal();
+          return;
+        }
+        openConfirmAction('提前結算並公佈答案？', '將會立即結束本局並顯示所有人的身份與詞語。', '公佈答案', () => {
+          stopTimer();
+          state.winnerInfo = {
+            artKey: 'civilian',
+            title: '本局提前結算',
+            subtitle: '主持已公佈本局詞語與全部身份',
+            bannerClass: 'bg-teal-50 border-2 border-teal-300 text-teal-900'
+          };
+          renderPlayScreen();
+          soundFX.win();
+          openGameOverModal();
+        });
+      });
+
+      // Phase 3: Elimination modal
+      el.btnElimCancel.addEventListener('click', () => {
+        state.pendingElimIndex = null;
+        el.modalConfirmElim.classList.add('hidden');
+      });
+      el.btnElimConfirm.addEventListener('click', confirmElimination);
+
+      // Undo & Return to Setup
+      el.btnUndoElim.addEventListener('click', undoElimination);
+      el.btnReopenResult.addEventListener('click', () => {
+        soundFX.click();
+        openGameOverModal();
+      });
+      el.btnPlayBackSetup.addEventListener('click', () => {
+        soundFX.click();
+        if (state.winnerInfo) {
+          renderSetup();
+          switchPhase('setup');
+        } else {
+          openConfirmAction('確定返回設定？', '目前這一局的進度將會清除。', '返回設定', () => {
+            renderSetup();
+            switchPhase('setup');
+          });
+        }
+      });
+
+      // Generic Confirm Action Modal
+      el.btnActionCancel.addEventListener('click', () => {
+        state.pendingConfirmCallback = null;
+        el.modalConfirmAction.classList.add('hidden');
+      });
+      el.btnActionConfirm.addEventListener('click', () => {
+        soundFX.click();
+        const cb = state.pendingConfirmCallback;
+        state.pendingConfirmCallback = null;
+        el.modalConfirmAction.classList.add('hidden');
+        if (typeof cb === 'function') cb();
+      });
+
+      // Host Peek modal
+      el.btnHostPeek.addEventListener('click', openHostPeekModal);
+      el.btnHostClose.addEventListener('click', () => el.modalHostPeek.classList.add('hidden'));
+      el.btnHostUnlock.addEventListener('click', () => {
+        soundFX.click();
+        el.hostPeekLocked.classList.add('hidden');
+        el.hostPeekContent.classList.remove('hidden');
+      });
+
+      // Forgot Word modal
+      el.btnForgotWord.addEventListener('click', openForgotWordModal);
+      el.btnForgotClose.addEventListener('click', () => el.modalForgotWord.classList.add('hidden'));
+      el.btnForgotDone.addEventListener('click', () => {
+        soundFX.click();
+        el.modalForgotWord.classList.add('hidden');
+      });
+
+      // Game Over modal actions
+      el.btnGameoverBoard.addEventListener('click', () => {
+        soundFX.click();
+        el.modalGameOver.classList.add('hidden');
+      });
+      el.btnGameoverSetup.addEventListener('click', () => {
+        soundFX.click();
+        el.modalGameOver.classList.add('hidden');
+        renderSetup();
+        switchPhase('setup');
+      });
+      el.btnNextRound.addEventListener('click', () => {
+        soundFX.click();
+        el.modalGameOver.classList.add('hidden');
+        pickRandomUnplayedSet(false);
+        renderSetup();
+        switchPhase('setup');
+        showToast(`已自動選好：${getSelectedWordPair().label}`, 'bg-teal-600 text-white border-teal-300', 1800);
+      });
+    }
+
+    // 15. Initialize App
+    loadPlayedSets();
+    bindEvents();
+    renderSetup();
+  </script>
+</body>
+</html>
