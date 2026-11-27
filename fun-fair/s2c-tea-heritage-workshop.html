@@ -1,0 +1,1928 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>S2C 茗茶非遺坊 · 3D 互動攤位及玩法示範（高畫質單邊版）</title>
+<script src="https://cdn.tailwindcss.com/3.4.17"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; user-select: none; -webkit-user-select: none; }
+  html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden;
+    font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: #132a1e;
+  }
+  #canvas-container {
+    position: fixed; inset: 0; width: 100%; height: 100%; cursor: grab;
+  }
+  #canvas-container:active { cursor: grabbing; }
+  .serif-tc { font-family: 'Noto Serif TC', serif; }
+  .glass {
+    background: rgba(16, 38, 27, 0.82);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(255, 255, 255, 0.16);
+  }
+  .glass-light {
+    background: rgba(248, 251, 249, 0.93);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border: 1px solid rgba(19, 42, 30, 0.14);
+  }
+  .nav-btn {
+    transition: all 0.2s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .nav-btn.active {
+    background: #1f7a4c;
+    color: #ffffff;
+    border-color: #6ee7b7;
+    box-shadow: 0 4px 14px rgba(31, 122, 76, 0.45);
+  }
+  .no-scrollbar::-webkit-scrollbar { display: none; }
+  .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+  @keyframes pulseRing {
+    0% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(217, 78, 42, 0.6); }
+    70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(217, 78, 42, 0); }
+    100% { transform: scale(0.96); box-shadow: 0 0 0 0 rgba(217, 78, 42, 0); }
+  }
+  .pulse-cta { animation: pulseRing 2s infinite; }
+</style>
+</head>
+<body>
+<div id="canvas-container" aria-label="S2C 茗茶非遺坊 3D 場景"></div>
+
+<!-- TOP HEADER BAR -->
+<header class="fixed top-3 left-3 right-3 z-20 flex items-center justify-between gap-2 pointer-events-none">
+  <div class="glass text-white px-3.5 py-2 rounded-2xl shadow-lg pointer-events-auto flex items-center gap-2.5 max-w-[65%]">
+    <div class="w-8 h-8 rounded-xl bg-emerald-600/90 flex items-center justify-center font-black serif-tc text-base shrink-0 border border-emerald-300/40">茶</div>
+    <div class="min-w-0">
+      <h1 class="serif-tc font-bold text-sm sm:text-base leading-tight truncate">S2C 茗茶非遺坊 · 3D 攤位模型</h1>
+      <p class="text-[11px] text-emerald-200/90 truncate">窄身單邊攤位 · 第一身無遮擋玩法示範</p>
+    </div>
+  </div>
+
+  <div class="flex items-center gap-1.5 pointer-events-auto">
+    <button id="btn-tour" type="button" class="glass text-white hover:bg-emerald-800/80 px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg transition" title="自動導覽">
+      <span id="tour-icon">▶</span><span class="hidden sm:inline" id="tour-text">自動導覽</span>
+    </button>
+    <button id="btn-light" type="button" class="glass text-white hover:bg-amber-800/70 px-2.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 shadow-lg transition" title="切換日景/黃昏燈籠">
+      <span id="light-icon">☀️</span><span class="hidden md:inline" id="light-text">日景</span>
+    </button>
+    <button id="btn-sound" type="button" class="glass text-white hover:bg-emerald-800/80 px-2.5 py-2 rounded-xl text-xs font-bold shadow-lg transition" title="音效開關">
+      🔊
+    </button>
+    <button id="btn-info-toggle" type="button" class="glass text-white hover:bg-emerald-800/80 px-2.5 py-2 rounded-xl text-xs font-bold shadow-lg transition sm:hidden" title="顯示/隱藏說明">
+      說明
+    </button>
+  </div>
+</header>
+
+<!-- COMPACT STAGE INFO & INTERACTIVE PANEL -->
+<aside id="info-panel" class="fixed right-3 top-16 sm:top-20 z-20 w-[calc(100vw-24px)] sm:w-64 glass-light text-emerald-950 rounded-2xl shadow-xl p-3.5 transition-all duration-300 pointer-events-auto">
+  <div class="flex items-center justify-between gap-2 mb-1">
+    <span id="stage-badge" class="px-2 py-0.5 rounded-full text-[11px] font-bold bg-emerald-100 text-emerald-800">全景</span>
+    <span id="stage-time" class="text-[11px] font-bold text-amber-800">90 秒 · HK$0</span>
+  </div>
+  <h2 id="stage-title" class="serif-tc font-black text-base leading-snug text-emerald-950 mb-1">茶館見習生</h2>
+  <p id="stage-desc" class="text-xs text-emerald-900/85 leading-snug mb-2.5">一張長檯 · 左至右闖三關</p>
+
+  <div id="interactive-area" class="border-t border-emerald-900/10 pt-2.5">
+    <!-- Overview -->
+    <div id="ctrl-overview" class="space-y-1 text-xs text-emerald-900">
+      <div>① <strong>搖青</strong>（20 秒拋接）</div>
+      <div>② <strong>七分滿</strong>（清水倒 70%）</div>
+      <div>③ <strong>叩指禮</strong>（叩桌＋領書籤）</div>
+    </div>
+
+    <!-- Stage 1 -->
+    <div id="ctrl-stage1" class="hidden space-y-2">
+      <div class="flex items-center justify-between bg-emerald-900/5 rounded-xl px-2.5 py-1.5">
+        <span class="text-xs font-bold">拋接次數</span>
+        <span id="s1-count" class="serif-tc font-black text-base text-emerald-700">0 / 5</span>
+      </div>
+      <button id="btn-s1-toss" type="button" class="w-full py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow transition pulse-cta">
+        🍃 拋起竹篩「搖青」
+      </button>
+      <p id="s1-feedback" class="text-[11px] text-emerald-800">20 秒內拋接 5 次過關</p>
+    </div>
+
+    <!-- Stage 2 -->
+    <div id="ctrl-stage2" class="hidden space-y-2">
+      <div class="flex items-center justify-between text-xs font-bold">
+        <span>水位（65%–75%）</span>
+        <span id="s2-pct" class="text-orange-700 font-black">0%</span>
+      </div>
+      <div class="relative w-full h-3 bg-emerald-950/10 rounded-full overflow-hidden">
+        <div class="absolute top-0 bottom-0 left-[65%] w-[10%] bg-emerald-500/45 border-x border-emerald-700/60"></div>
+        <div id="s2-bar" class="h-full bg-sky-500 transition-all duration-75 rounded-full" style="width: 0%"></div>
+      </div>
+      <div class="flex gap-1.5">
+        <button id="btn-s2-pour" type="button" class="flex-1 py-2 px-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-bold text-xs shadow transition">
+          🫖 按住斟水
+        </button>
+        <button id="btn-s2-reset" type="button" class="py-2 px-2.5 rounded-xl bg-emerald-900/10 hover:bg-emerald-900/20 text-emerald-900 font-bold text-xs transition">
+          重倒
+        </button>
+      </div>
+      <p id="s2-feedback" class="text-[11px] text-emerald-800">停在綠線內即過關</p>
+    </div>
+
+    <!-- Stage 3 -->
+    <div id="ctrl-stage3" class="hidden space-y-2">
+      <div class="grid grid-cols-1 gap-1.5">
+        <button id="btn-s3-bow" type="button" class="w-full py-1.5 px-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-bold text-xs shadow transition">
+          🍵 雙手奉茶 ＋ 微鞠躬
+        </button>
+        <button id="btn-s3-palm" type="button" class="w-full py-1.5 px-2.5 rounded-xl bg-orange-600 hover:bg-orange-700 active:scale-95 text-white font-bold text-xs shadow transition">
+          ✋ 伸掌禮「請用茶」
+        </button>
+        <button id="btn-s3-tap" type="button" class="w-full py-1.5 px-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 active:scale-95 text-white font-bold text-xs shadow transition">
+          🙏 示範「茶博士奉茶 ＋ 叩指謝茶禮」
+        </button>
+      </div>
+      <div class="bg-amber-50/90 border border-amber-200 rounded-xl p-2 space-y-1">
+        <div class="text-[11px] font-bold text-amber-900">問答：白族三道茶是？</div>
+        <button type="button" data-ans="correct" class="quiz-opt w-full text-left text-[11px] px-2 py-1 rounded-lg bg-white hover:bg-emerald-50 border border-amber-200 font-medium">A. 一苦、二甜、三回味</button>
+        <button type="button" data-ans="wrong" class="quiz-opt w-full text-left text-[11px] px-2 py-1 rounded-lg bg-white hover:bg-rose-50 border border-amber-200 font-medium">B. 一酸、二辣、三清香</button>
+        <div id="s3-quiz-result" class="text-[11px] font-bold text-emerald-800 hidden"></div>
+      </div>
+    </div>
+
+    <!-- Floorplan -->
+    <div id="ctrl-floorplan" class="hidden space-y-1 text-xs text-emerald-900">
+      <div>• 一張長檯 · 左入右出</div>
+      <div>• 中間擋板防球彈入水杯</div>
+      <div>• 右檯底藏清水回收桶</div>
+    </div>
+  </div>
+</aside>
+
+<!-- BOTTOM STAGE SWITCHER DOCK -->
+<nav class="fixed bottom-3 left-1/2 -translate-x-1/2 z-20 max-w-[96vw] glass p-1.5 rounded-2xl shadow-2xl flex items-center gap-1 overflow-x-auto no-scrollbar pointer-events-auto">
+  <button type="button" data-view="overview" class="nav-btn active whitespace-nowrap px-3 py-2 rounded-xl text-xs font-bold text-emerald-100 border border-transparent hover:bg-white/10">
+    🏛️ 全景
+  </button>
+  <button type="button" data-view="stage1" class="nav-btn whitespace-nowrap px-3 py-2 rounded-xl text-xs font-bold text-emerald-100 border border-transparent hover:bg-white/10">
+    ① 搖青關
+  </button>
+  <button type="button" data-view="stage2" class="nav-btn whitespace-nowrap px-3 py-2 rounded-xl text-xs font-bold text-emerald-100 border border-transparent hover:bg-white/10">
+    ② 七分滿
+  </button>
+  <button type="button" data-view="stage3" class="nav-btn whitespace-nowrap px-3 py-2 rounded-xl text-xs font-bold text-emerald-100 border border-transparent hover:bg-white/10">
+    ③ 叩指禮
+  </button>
+  <button type="button" data-view="floorplan" class="nav-btn whitespace-nowrap px-3 py-2 rounded-xl text-xs font-bold text-emerald-100 border border-transparent hover:bg-white/10">
+    📐 俯視圖
+  </button>
+</nav>
+
+<script>
+(function() {
+  // =========================================================
+  // 1. WEB AUDIO SYNTHESIZED SFX
+  // =========================================================
+  let audioCtx = null;
+  let soundEnabled = true;
+
+  function ensureAudio() {
+    if (!soundEnabled) return null;
+    if (!audioCtx) {
+      const AC = window.AudioContext || window.webkitAudioContext;
+      if (AC) audioCtx = new AC();
+    }
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
+    return audioCtx;
+  }
+
+  function playBambooClack() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(340, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(145, ctx.currentTime + 0.09);
+    gain.gain.setValueAtTime(0.22, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.11);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.12);
+  }
+
+  function playSingleWoodTap() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(560, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(195, ctx.currentTime + 0.055);
+    gain.gain.setValueAtTime(0.22, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.065);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.07);
+  }
+
+  function playChime() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    [523.25, 659.25, 783.99, 1046.5].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, ctx.currentTime + i * 0.08);
+      gain.gain.setValueAtTime(0.14, ctx.currentTime + i * 0.08);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + i * 0.08 + 0.38);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(ctx.currentTime + i * 0.08);
+      osc.stop(ctx.currentTime + i * 0.08 + 0.4);
+    });
+  }
+
+  function playPourDrop() {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    const base = 360 + stage2Level * 4.5;
+    osc.frequency.setValueAtTime(base, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(base + 95, ctx.currentTime + 0.05);
+    gain.gain.setValueAtTime(0.05, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.start(); osc.stop(ctx.currentTime + 0.065);
+  }
+
+  // =========================================================
+  // 2. PROCEDURAL HIGH-RES PBR TEXTURES & BUMP MAPS
+  // =========================================================
+  function makeWoodPair(baseHex, grainHex) {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 512;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = baseHex;
+    ctx.fillRect(0, 0, 512, 512);
+
+    const b = document.createElement('canvas');
+    b.width = 512; b.height = 512;
+    const bctx = b.getContext('2d');
+    bctx.fillStyle = '#808080';
+    bctx.fillRect(0, 0, 512, 512);
+
+    for (let i = 0; i < 120; i++) {
+      const y = Math.random() * 512;
+      const w = 1 + Math.random() * 3.5;
+      const dy1 = (Math.random() - 0.5) * 16;
+      const dy2 = (Math.random() - 0.5) * 16;
+
+      ctx.strokeStyle = grainHex;
+      ctx.globalAlpha = 0.09 + Math.random() * 0.16;
+      ctx.lineWidth = w;
+      ctx.beginPath(); ctx.moveTo(0, y);
+      ctx.bezierCurveTo(170, y + dy1, 340, y + dy2, 512, y); ctx.stroke();
+
+      bctx.strokeStyle = (i % 2 === 0) ? '#606060' : '#a0a0a0';
+      bctx.globalAlpha = 0.25;
+      bctx.lineWidth = w;
+      bctx.beginPath(); bctx.moveTo(0, y);
+      bctx.bezierCurveTo(170, y + dy1, 340, y + dy2, 512, y); bctx.stroke();
+    }
+    const map = new THREE.CanvasTexture(c);
+    const bump = new THREE.CanvasTexture(b);
+    map.wrapS = map.wrapT = bump.wrapS = bump.wrapT = THREE.RepeatWrapping;
+    map.encoding = THREE.sRGBEncoding;
+    return { map, bump };
+  }
+
+  function makeCourtyardTileTexture() {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 512;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#ddd6c7';
+    ctx.fillRect(0, 0, 512, 512);
+    const step = 64;
+    for (let x = 0; x < 512; x += step) {
+      for (let y = 0; y < 512; y += step) {
+        const shade = ((x / step + y / step) % 2 === 0) ? '#e5dfd2' : '#d8d1c2';
+        ctx.fillStyle = shade;
+        ctx.fillRect(x + 2, y + 2, step - 4, step - 4);
+        // subtle concrete speckle
+        ctx.fillStyle = 'rgba(120,110,95,0.06)';
+        ctx.fillRect(x + 8 + (x % 13), y + 10 + (y % 11), 14, 14);
+      }
+    }
+    ctx.strokeStyle = '#b9b09e';
+    ctx.lineWidth = 2;
+    for (let i = 0; i <= 512; i += step) {
+      ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, 512); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(512, i); ctx.stroke();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(9, 9);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeBambooWeaveTexture() {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#c89e5a';
+    ctx.fillRect(0, 0, 256, 256);
+    for (let y = 0; y < 256; y += 16) {
+      for (let x = 0; x < 256; x += 16) {
+        ctx.fillStyle = ((x / 16 + y / 16) % 2 === 0) ? '#dfb977' : '#ad803c';
+        ctx.fillRect(x + 1, y + 1, 14, 14);
+      }
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(3, 3);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeBlueWhiteCupTexture() {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 128;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fcfdff';
+    ctx.fillRect(0, 0, 256, 128);
+    ctx.strokeStyle = '#1e40af';
+    ctx.lineWidth = 4;
+    ctx.beginPath(); ctx.moveTo(0, 14); ctx.lineTo(256, 14); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, 114); ctx.lineTo(256, 114); ctx.stroke();
+    for (let x = 16; x < 256; x += 48) {
+      ctx.beginPath(); ctx.arc(x, 64, 13, 0, Math.PI * 2); ctx.stroke();
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath(); ctx.arc(x, 64, 5, 0, Math.PI * 2); ctx.fill();
+    }
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeBannerTexture() {
+    const c = document.createElement('canvas');
+    c.width = 1024; c.height = 256;
+    const ctx = c.getContext('2d');
+    const g = ctx.createLinearGradient(0, 0, 1024, 256);
+    g.addColorStop(0, '#103322');
+    g.addColorStop(0.5, '#1b5436');
+    g.addColorStop(1, '#103322');
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, 1024, 256);
+
+    ctx.strokeStyle = '#eab95a';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(18, 18, 988, 220);
+    ctx.lineWidth = 2;
+    ctx.strokeRect(32, 32, 960, 192);
+
+    ctx.fillStyle = '#c83e2b';
+    ctx.fillRect(68, 72, 76, 112);
+    ctx.fillStyle = '#fff8ec';
+    ctx.font = 'bold 34px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('非', 106, 115);
+    ctx.fillText('遺', 106, 162);
+
+    ctx.fillStyle = '#fff9ec';
+    ctx.font = '900 78px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('S2C 茗茶非遺坊', 530, 126);
+
+    ctx.fillStyle = '#f5d284';
+    ctx.font = '700 30px "Noto Sans TC", sans-serif';
+    ctx.fillText('茶館見習生大挑戰 · 搖青 · 七分滿 · 叩指禮', 530, 192);
+
+    ctx.fillStyle = '#4ade80';
+    ctx.beginPath(); ctx.ellipse(905, 118, 34, 14, -0.5, 0, Math.PI * 2); ctx.fill();
+    ctx.fillStyle = '#86efac';
+    ctx.beginPath(); ctx.ellipse(935, 146, 26, 11, 0.3, 0, Math.PI * 2); ctx.fill();
+
+    const tex = new THREE.CanvasTexture(c);
+    tex.anisotropy = 8;
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeSixTeasPosterTexture() {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 640;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#faf5e8';
+    ctx.fillRect(0, 0, 512, 640);
+    ctx.strokeStyle = '#1f7a4c';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(16, 16, 480, 608);
+
+    ctx.fillStyle = '#133122';
+    ctx.font = '900 44px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('中國六大茶類', 256, 86);
+    ctx.font = '500 20px "Noto Sans TC", sans-serif';
+    ctx.fillStyle = '#425e4f';
+    ctx.fillText('同源茶樹 · 六種發酵工藝', 256, 124);
+
+    const teas = [
+      { name: '綠茶', sub: '殺青 · 不發酵', col: '#65a30d' },
+      { name: '白茶', sub: '萎凋 · 輕微發酵', col: '#d4d4aa' },
+      { name: '黃茶', sub: '悶黃 · 輕發酵', col: '#eab308' },
+      { name: '烏龍', sub: '做青 · 半發酵', col: '#d97706' },
+      { name: '紅茶', sub: '發酵 · 全發酵', col: '#b91c1c' },
+      { name: '黑茶', sub: '渥堆 · 後發酵', col: '#572812' }
+    ];
+    teas.forEach((t, idx) => {
+      const col = idx % 2;
+      const row = Math.floor(idx / 2);
+      const cx = 148 + col * 216;
+      const cy = 225 + row * 145;
+      ctx.fillStyle = t.col;
+      ctx.beginPath(); ctx.arc(cx, cy, 42, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 4; ctx.stroke();
+      ctx.fillStyle = '#132a1e';
+      ctx.font = '700 28px "Noto Serif TC", serif';
+      ctx.fillText(t.name, cx, cy + 72);
+      ctx.fillStyle = '#4b5563';
+      ctx.font = '500 17px "Noto Sans TC", sans-serif';
+      ctx.fillText(t.sub, cx, cy + 96);
+    });
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeEtiquettePosterTexture() {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 640;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fdf6ee';
+    ctx.fillRect(0, 0, 512, 640);
+    ctx.strokeStyle = '#c84b28';
+    ctx.lineWidth = 12;
+    ctx.strokeRect(16, 16, 480, 608);
+
+    ctx.fillStyle = '#992b0f';
+    ctx.font = '900 42px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('中式茶俗禮儀', 256, 88);
+
+    const items = [
+      ['① 搖青做青', '雙手輕篩，令茶葉散發清香'],
+      ['② 茶倒七分滿', '留三分人情，防燙手顯敬意'],
+      ['③ 叩指謝茶禮', '食中二指屈曲，輕叩桌面三下'],
+      ['④ 白族三道茶', '一苦、二甜、三回味']
+    ];
+    items.forEach((it, i) => {
+      const y = 175 + i * 110;
+      ctx.fillStyle = '#133122';
+      ctx.font = '700 30px "Noto Serif TC", serif';
+      ctx.fillText(it[0], 256, y);
+      ctx.fillStyle = '#475569';
+      ctx.font = '500 22px "Noto Sans TC", sans-serif';
+      ctx.fillText(it[1], 256, y + 36);
+    });
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeStopperTexture() {
+    const c = document.createElement('canvas');
+    c.width = 256; c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#c79c63';
+    ctx.fillRect(0, 0, 256, 256);
+    ctx.strokeStyle = '#7c5524';
+    ctx.lineWidth = 8;
+    ctx.strokeRect(10, 10, 236, 236);
+    ctx.fillStyle = '#1f7a4c';
+    ctx.beginPath(); ctx.ellipse(128, 116, 32, 68, -0.25, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = '#d1fae5'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(116, 173); ctx.lineTo(138, 60); ctx.stroke();
+    ctx.fillStyle = '#3f2a10';
+    ctx.font = '700 24px "Noto Sans TC", sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('紙皮擋板', 128, 224);
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeStationPlaqueTexture(title, sub, bgHex) {
+    const c = document.createElement('canvas');
+    c.width = 512; c.height = 128;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = bgHex;
+    ctx.fillRect(0, 0, 512, 128);
+    ctx.strokeStyle = '#ffffff';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(8, 8, 496, 112);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '900 40px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(title, 256, 60);
+    ctx.font = '700 23px "Noto Sans TC", sans-serif';
+    ctx.fillStyle = '#fef3c7';
+    ctx.fillText(sub, 256, 100);
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  function makeBookmarkTexture(char) {
+    const c = document.createElement('canvas');
+    c.width = 96; c.height = 256;
+    const ctx = c.getContext('2d');
+    ctx.fillStyle = '#fdf8ee';
+    ctx.fillRect(0, 0, 96, 256);
+    ctx.strokeStyle = '#b91c1c';
+    ctx.lineWidth = 6;
+    ctx.strokeRect(6, 6, 84, 244);
+    ctx.fillStyle = '#132a1e';
+    ctx.font = '900 54px "Noto Serif TC", serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(char, 48, 138);
+    ctx.fillStyle = '#b91c1c';
+    ctx.fillRect(36, 168, 24, 24);
+    const tex = new THREE.CanvasTexture(c);
+    tex.encoding = THREE.sRGBEncoding;
+    return tex;
+  }
+
+  // =========================================================
+  // 3. THREE.JS SCENE, SKY DOME SHADER & PMREM REFLECTIONS
+  // =========================================================
+  const container = document.getElementById('canvas-container');
+  const scene = new THREE.Scene();
+  scene.fog = new THREE.FogExp2(0xdceee8, 0.008);
+
+  const camera = new THREE.PerspectiveCamera(42, window.innerWidth / window.innerHeight, 0.1, 140);
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
+  renderer.setSize(window.innerWidth, window.innerHeight);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.outputEncoding = THREE.sRGBEncoding;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 0.94;
+  container.appendChild(renderer.domElement);
+
+  // Procedural Studio Environment Map for crisp porcelain, clay & glass highlights
+  const pmrem = new THREE.PMREMGenerator(renderer);
+  const envScene = new THREE.Scene();
+  envScene.background = new THREE.Color(0xdbeafe);
+  const envTop = new THREE.Mesh(
+    new THREE.SphereGeometry(20, 16, 12),
+    new THREE.MeshBasicMaterial({ color: 0xfff8e7, side: THREE.BackSide })
+  );
+  envScene.add(envTop);
+  const envSun = new THREE.Mesh(
+    new THREE.SphereGeometry(3, 12, 12),
+    new THREE.MeshBasicMaterial({ color: 0xffffff })
+  );
+  envSun.position.set(10, 12, 10);
+  envScene.add(envSun);
+  scene.environment = pmrem.fromScene(envScene, 0.04).texture;
+  pmrem.dispose();
+
+  // Custom GLSL Sky Dome with smooth Day/Golden transition
+  const skyUniforms = {
+    topColor: { value: new THREE.Color(0x5ba8e6) },
+    bottomColor: { value: new THREE.Color(0xeaf5ee) },
+    sunColor: { value: new THREE.Color(0xfff4c2) },
+    sunDir: { value: new THREE.Vector3(0.45, 0.55, 0.65).normalize() }
+  };
+  const skyMat = new THREE.ShaderMaterial({
+    uniforms: skyUniforms,
+    side: THREE.BackSide,
+    depthWrite: false,
+    vertexShader: `
+      varying vec3 vWorldPos;
+      void main() {
+        vec4 wp = modelMatrix * vec4(position, 1.0);
+        vWorldPos = wp.xyz;
+        gl_Position = projectionMatrix * viewMatrix * wp;
+      }
+    `,
+    fragmentShader: `
+      uniform vec3 topColor;
+      uniform vec3 bottomColor;
+      uniform vec3 sunColor;
+      uniform vec3 sunDir;
+      varying vec3 vWorldPos;
+      void main() {
+        vec3 dir = normalize(vWorldPos);
+        float h = clamp(dir.y * 1.15 + 0.08, 0.0, 1.0);
+        vec3 col = mix(bottomColor, topColor, pow(h, 0.65));
+        float sunAmt = max(dot(dir, sunDir), 0.0);
+        col += sunColor * pow(sunAmt, 24.0) * 0.45;
+        gl_FragColor = vec4(col, 1.0);
+      }
+    `
+  });
+  scene.add(new THREE.Mesh(new THREE.SphereGeometry(65, 24, 16), skyMat));
+
+  // Soft Drifting Stylized Clouds
+  const clouds = [];
+  const cloudMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 1, transparent: true, opacity: 0.85 });
+  for (let i = 0; i < 6; i++) {
+    const cg = new THREE.Group();
+    [[0,0,0,1.2], [1.0,0.2,0.1,0.9], [-0.95,0.1,-0.1,0.85]].forEach(([cx,cy,cz,r]) => {
+      const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(r, 1), cloudMat);
+      puff.position.set(cx, cy, cz);
+      puff.scale.set(1.2, 0.65, 0.8);
+      cg.add(puff);
+    });
+    cg.position.set(-22 + i * 9, 13 + (i % 3) * 1.8, -22 - (i % 2) * 5);
+    scene.add(cg);
+    clouds.push(cg);
+  }
+
+  // Lighting
+  const hemiLight = new THREE.HemisphereLight(0xfffdf4, 0x4b6b57, 0.52);
+  scene.add(hemiLight);
+
+  const sunLight = new THREE.DirectionalLight(0xfff4d6, 1.15);
+  sunLight.position.set(7.5, 13, 8.5);
+  sunLight.castShadow = true;
+  sunLight.shadow.mapSize.width = 2048;
+  sunLight.shadow.mapSize.height = 2048;
+  sunLight.shadow.camera.near = 1;
+  sunLight.shadow.camera.far = 36;
+  sunLight.shadow.camera.left = -9;
+  sunLight.shadow.camera.right = 9;
+  sunLight.shadow.camera.top = 9;
+  sunLight.shadow.camera.bottom = -9;
+  sunLight.shadow.bias = -0.0004;
+  scene.add(sunLight);
+
+  const fillLight = new THREE.DirectionalLight(0xc2ece0, 0.22);
+  fillLight.position.set(-6, 5, 6);
+  scene.add(fillLight);
+
+  const lanternLights = [];
+
+  // =========================================================
+  // 4. HK SCHOOL COURTYARD, SCHOOL BUILDING & NEIGHBOR BOOTHS
+  // =========================================================
+  const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(46, 46),
+    new THREE.MeshStandardMaterial({ map: makeCourtyardTileTexture(), roughness: 0.86, metalness: 0.02 })
+  );
+  ground.rotation.x = -Math.PI / 2;
+  ground.receiveShadow = true;
+  scene.add(ground);
+
+  // Stylized Hong Kong School Building Facade in Background
+  const schoolBg = new THREE.Group();
+  const concreteMat = new THREE.MeshStandardMaterial({ color: 0xeee8da, roughness: 0.9 });
+  const trimMat = new THREE.MeshStandardMaterial({ color: 0x2f6b55, roughness: 0.8 });
+  const glassWinMat = new THREE.MeshStandardMaterial({ color: 0x7cb5d2, roughness: 0.2, metalness: 0.35 });
+
+  const mainBlock = new THREE.Mesh(new THREE.BoxGeometry(28, 10.5, 2.5), concreteMat);
+  mainBlock.position.set(0, 5.25, -13.5);
+  schoolBg.add(mainBlock);
+
+  // Horizontal balcony slabs & classroom windows
+  for (let floor = 1; floor <= 2; floor++) {
+    const slab = new THREE.Mesh(new THREE.BoxGeometry(28.4, 0.32, 3.0), trimMat);
+    slab.position.set(0, floor * 3.3, -13.3);
+    schoolBg.add(slab);
+    for (let wx = -11; wx <= 11; wx += 2.75) {
+      const win = new THREE.Mesh(new THREE.PlaneGeometry(1.9, 1.5), glassWinMat);
+      win.position.set(wx, floor * 3.3 + 1.5, -12.2);
+      schoolBg.add(win);
+    }
+  }
+  scene.add(schoolBg);
+
+  // Courtyard Trees
+  function addTree(x, z, scale) {
+    const g = new THREE.Group();
+    const trunk = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.17 * scale, 0.27 * scale, 2.5 * scale, 8),
+      new THREE.MeshStandardMaterial({ color: 0x6b4c35, roughness: 0.9 })
+    );
+    trunk.position.y = 1.25 * scale;
+    trunk.castShadow = true;
+    g.add(trunk);
+    const leafCols = [0x266146, 0x388762, 0x52b788];
+    [[0, 3.0, 0, 1.32], [-0.72, 2.5, 0.28, 0.98], [0.75, 2.55, -0.22, 1.0]].forEach((o, i) => {
+      const foliage = new THREE.Mesh(
+        new THREE.DodecahedronGeometry(o[3] * scale, 1),
+        new THREE.MeshStandardMaterial({ color: leafCols[i], roughness: 0.85 })
+      );
+      foliage.position.set(o[0] * scale, o[1] * scale, o[2] * scale);
+      foliage.castShadow = true;
+      g.add(foliage);
+    });
+    g.position.set(x, 0, z);
+    scene.add(g);
+  }
+  addTree(-7.2, -5.5, 1.25);
+  addTree(7.4, -5.2, 1.3);
+  addTree(-1.8, -7.8, 1.1);
+  addTree(2.8, -8.0, 1.2);
+
+  // Festive Courtyard Triangle Bunting Flags
+  const flagCols = [0xd94e2a, 0xeab308, 0x1f7a4c, 0x2563eb];
+  for (let i = 0; i < 16; i++) {
+    const fx = -7.5 + i * 1.0;
+    const sag = Math.sin((i / 15) * Math.PI) * 0.65;
+    const flag = new THREE.Mesh(
+      new THREE.ConeGeometry(0.16, 0.34, 3),
+      new THREE.MeshStandardMaterial({ color: flagCols[i % 4], roughness: 0.75 })
+    );
+    flag.rotation.x = Math.PI;
+    flag.position.set(fx, 4.15 - sag, -2.1);
+    scene.add(flag);
+  }
+
+  // Snug Neighboring Booths (adjusted closer for narrower S2C booth!)
+  function addNeighborBooth(xPos, canopyHex, clothHex) {
+    const nb = new THREE.Group();
+    const wallMat = new THREE.MeshStandardMaterial({ color: 0xede7db, roughness: 0.9 });
+    const back = new THREE.Mesh(new THREE.BoxGeometry(3.4, 2.55, 0.08), wallMat);
+    back.position.set(0, 1.275, -1.22);
+    back.receiveShadow = true;
+    nb.add(back);
+
+    const canopy = new THREE.Mesh(
+      new THREE.BoxGeometry(3.55, 0.26, 2.55),
+      new THREE.MeshStandardMaterial({ color: canopyHex, roughness: 0.75 })
+    );
+    canopy.position.set(0, 2.68, 0);
+    canopy.castShadow = true;
+    nb.add(canopy);
+
+    const tbl = new THREE.Mesh(
+      new THREE.BoxGeometry(3.0, 0.76, 0.72),
+      new THREE.MeshStandardMaterial({ color: clothHex, roughness: 0.85 })
+    );
+    tbl.position.set(0, 0.38, 0.78);
+    tbl.castShadow = true; tbl.receiveShadow = true;
+    nb.add(tbl);
+
+    nb.position.set(xPos, 0, 0);
+    scene.add(nb);
+  }
+  addNeighborBooth(-3.16, 0x3b82f6, 0x93c5fd);
+  addNeighborBooth(3.16, 0xea580c, 0xfdba74);
+
+  // =========================================================
+  // 5. NARROWER SINGLE-SIDED S2C BOOTH (W = 4.4m, D = 2.45m)
+  // =========================================================
+  const booth = new THREE.Group();
+  scene.add(booth);
+
+  const W = 2.75, D = 2.25, H = 2.68;
+  const darkWood = makeWoodPair('#5a3b22', '#331e0e');
+  const warmWood = makeWoodPair('#bc8c58', '#875c31');
+  const woodDarkMat = new THREE.MeshStandardMaterial({ map: darkWood.map, bumpMap: darkWood.bump, bumpScale: 0.015, roughness: 0.72 });
+  const woodWarmMat = new THREE.MeshStandardMaterial({ map: warmWood.map, bumpMap: warmWood.bump, bumpScale: 0.012, roughness: 0.68 });
+  const wallCreamMat = new THREE.MeshStandardMaterial({ color: 0xf5f0e5, roughness: 0.92 });
+
+  // 3 Solid Partition Walls (Back, Left, Right)
+  const backWall = new THREE.Mesh(new THREE.BoxGeometry(W, H, 0.1), wallCreamMat);
+  backWall.position.set(0, H / 2, -D / 2);
+  backWall.receiveShadow = true; backWall.castShadow = true;
+  booth.add(backWall);
+
+  const leftWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, H, D), wallCreamMat);
+  leftWall.position.set(-W / 2, H / 2, 0);
+  leftWall.receiveShadow = true; leftWall.castShadow = true;
+  booth.add(leftWall);
+
+  const rightWall = new THREE.Mesh(new THREE.BoxGeometry(0.1, H, D), wallCreamMat);
+  rightWall.position.set(W / 2, H / 2, 0);
+  rightWall.receiveShadow = true; rightWall.castShadow = true;
+  booth.add(rightWall);
+
+  // Booth interior floor mat
+  const floorMat = new THREE.Mesh(
+    new THREE.PlaneGeometry(W - 0.14, D - 0.14),
+    new THREE.MeshStandardMaterial({ color: 0xd8ceb7, roughness: 0.95 })
+  );
+  floorMat.rotation.x = -Math.PI / 2;
+  floorMat.position.set(0, 0.008, 0);
+  floorMat.receiveShadow = true;
+  booth.add(floorMat);
+
+  // 4 Corner Timber Posts
+  [[-W/2, -D/2], [W/2, -D/2], [-W/2, D/2], [W/2, D/2]].forEach(([px, pz]) => {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.13, H + 0.14, 0.13), woodDarkMat);
+    post.position.set(px, (H + 0.14) / 2, pz);
+    post.castShadow = true;
+    booth.add(post);
+  });
+
+  // ROOF GROUP (Hidden automatically in Top-Down Floorplan View!)
+  const roofGroup = new THREE.Group();
+  booth.add(roofGroup);
+
+  const roof = new THREE.Mesh(
+    new THREE.BoxGeometry(W + 0.3, 0.12, D + 0.42),
+    new THREE.MeshStandardMaterial({ color: 0x17472e, roughness: 0.78 })
+  );
+  roof.position.set(0, H + 0.18, 0.08);
+  roof.rotation.x = 0.05;
+  roof.castShadow = true;
+  roofGroup.add(roof);
+
+  // Chinese Lattice Eaves Trim under front canopy
+  for (let lx = -W/2 + 0.25; lx <= W/2 - 0.25; lx += 0.38) {
+    const bar = new THREE.Mesh(new THREE.BoxGeometry(0.03, 0.18, 0.03), woodDarkMat);
+    bar.position.set(lx, H - 0.56, D / 2 + 0.02);
+    roofGroup.add(bar);
+  }
+  const eavesRail = new THREE.Mesh(new THREE.BoxGeometry(W - 0.1, 0.035, 0.04), woodDarkMat);
+  eavesRail.position.set(0, H - 0.65, D / 2 + 0.02);
+  roofGroup.add(eavesRail);
+
+  // Main Overhead Calligraphy Banner
+  const banner = new THREE.Mesh(
+    new THREE.BoxGeometry(W - 0.22, 0.64, 0.06),
+    new THREE.MeshStandardMaterial({ map: makeBannerTexture(), roughness: 0.62 })
+  );
+  banner.position.set(0, H - 0.16, D / 2 + 0.04);
+  banner.castShadow = true;
+  roofGroup.add(banner);
+
+  // 4 Glowing Silk Lanterns (part of roofGroup so top-down is clean)
+  const lanterns = [];
+  function addLantern(x, y, z, colorHex, glowHex) {
+    const g = new THREE.Group();
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, 0.22, 6), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+    cord.position.y = -0.11;
+    g.add(cord);
+
+    const body = new THREE.Mesh(
+      new THREE.SphereGeometry(0.16, 18, 14),
+      new THREE.MeshStandardMaterial({ color: colorHex, emissive: glowHex, emissiveIntensity: 0.35, roughness: 0.38 })
+    );
+    body.scale.set(1, 1.12, 1);
+    body.position.y = -0.35;
+    g.add(body);
+
+    const capTop = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.035, 12), woodDarkMat);
+    capTop.position.y = -0.18; g.add(capTop);
+    const capBot = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.055, 0.035, 12), woodDarkMat);
+    capBot.position.y = -0.52; g.add(capBot);
+    const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.026, 0.18, 8), new THREE.MeshStandardMaterial({ color: 0xd97706, roughness: 0.8 }));
+    tassel.position.y = -0.62; g.add(tassel);
+
+    const pt = new THREE.PointLight(glowHex, 0.0, 5.5);
+    pt.position.y = -0.35;
+    g.add(pt);
+    lanternLights.push({ light: pt, mat: body.material });
+
+    g.position.set(x, y, z);
+    roofGroup.add(g);
+    lanterns.push({ group: g, phase: x * 1.4 });
+  }
+  addLantern(-1.05, H - 0.48, D / 2 - 0.1, 0xdc2626, 0xff6b35);
+  addLantern(-0.35, H - 0.48, D / 2 - 0.1, 0xf59e0b, 0xffb703);
+  addLantern(0.35, H - 0.48, D / 2 - 0.1, 0xf59e0b, 0xffb703);
+  addLantern(1.05, H - 0.48, D / 2 - 0.1, 0xdc2626, 0xff6b35);
+
+  // Inner Wall Posters
+  const posterRight = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.02, 1.28),
+    new THREE.MeshStandardMaterial({ map: makeSixTeasPosterTexture(), roughness: 0.72 })
+  );
+  posterRight.position.set(W / 2 - 0.06, 1.56, -0.12);
+  posterRight.rotation.y = -Math.PI / 2;
+  booth.add(posterRight);
+
+  const posterLeft = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.02, 1.28),
+    new THREE.MeshStandardMaterial({ map: makeEtiquettePosterTexture(), roughness: 0.72 })
+  );
+  posterLeft.position.set(-W / 2 + 0.06, 1.56, -0.12);
+  posterLeft.rotation.y = Math.PI / 2;
+  booth.add(posterLeft);
+
+  // Back wall handmade green paper bamboo streamers
+  const bambooStreamers = [];
+  const bambooMat = new THREE.MeshStandardMaterial({ color: 0x2f9e5b, roughness: 0.62 });
+  const bambooNodeMat = new THREE.MeshStandardMaterial({ color: 0x1a6939, roughness: 0.7 });
+  for (let i = 0; i < 7; i++) {
+    const bx = -1.12 + i * 0.37;
+    const g = new THREE.Group();
+    const len = 1.42 + (i % 3) * 0.2;
+    const stalk = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.034, len, 8), bambooMat);
+    stalk.position.y = -len / 2;
+    g.add(stalk);
+    for (let n = 0; n < 4; n++) {
+      const ring = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.024, 8), bambooNodeMat);
+      ring.position.y = -0.24 - n * 0.34;
+      g.add(ring);
+    }
+    g.position.set(bx, H - 0.08, -D / 2 + 0.11);
+    booth.add(g);
+    bambooStreamers.push({ group: g, phase: i * 0.75 });
+  }
+
+  // =========================================================
+  // 6. FRONT COUNTER TABLES, STOPPER & DETAILED TEA PROPS
+  // =========================================================
+  const tableY = 0.78;
+  const tableZ = 0.68;
+
+  function buildTable(xCenter, width, skirtHex) {
+    const tg = new THREE.Group();
+    const top = new THREE.Mesh(new THREE.BoxGeometry(width, 0.06, 0.74), woodWarmMat);
+    top.position.set(0, tableY, 0);
+    top.castShadow = true; top.receiveShadow = true;
+    tg.add(top);
+
+    const skirt = new THREE.Mesh(
+      new THREE.BoxGeometry(width - 0.04, tableY - 0.04, 0.03),
+      new THREE.MeshStandardMaterial({ color: skirtHex, roughness: 0.88 })
+    );
+    skirt.position.set(0, (tableY - 0.04) / 2, 0.35);
+    skirt.receiveShadow = true;
+    tg.add(skirt);
+
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x4b5563, metalness: 0.45, roughness: 0.45 });
+    [[-width/2 + 0.07, -0.3], [width/2 - 0.07, -0.3], [-width/2 + 0.07, 0.3], [width/2 - 0.07, 0.3]].forEach(([lx, lz]) => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.022, 0.022, tableY, 8), legMat);
+      leg.position.set(lx, tableY / 2, lz);
+      leg.castShadow = true;
+      tg.add(leg);
+    });
+
+    tg.position.set(xCenter, 0, tableZ);
+    booth.add(tg);
+    return tg;
+  }
+
+  buildTable(0.0, 2.52, 0x1b5e3c); // ONE single long table spanning the whole booth width
+
+  // Front Station Plaques on Left & Right halves of the single long table
+  const plaque1 = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.06, 0.28),
+    new THREE.MeshStandardMaterial({ map: makeStationPlaqueTexture('① 搖青大作戰', '限時 20 秒 · 拋接 5 次', '#155e3b') })
+  );
+  plaque1.position.set(-0.64, 0.46, tableZ + 0.37);
+  booth.add(plaque1);
+
+  const plaque2 = new THREE.Mesh(
+    new THREE.PlaneGeometry(1.22, 0.28),
+    new THREE.MeshStandardMaterial({ map: makeStationPlaqueTexture('② 七分滿 ＋ ③ 叩指禮', '常溫清水敬茶 · 贏手寫書籤', '#992b0f') })
+  );
+  plaque2.position.set(0.58, 0.46, tableZ + 0.37);
+  booth.add(plaque2);
+
+  // Center Cardboard Stopper Panel
+  const stopperGroup = new THREE.Group();
+  const stopperPanel = new THREE.Mesh(new THREE.BoxGeometry(0.04, 0.48, 0.64), new THREE.MeshStandardMaterial({ map: makeStopperTexture(), roughness: 0.85 }));
+  stopperPanel.position.y = 0.24; stopperPanel.castShadow = true;
+  stopperGroup.add(stopperPanel);
+  const footL = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.02, 0.18), new THREE.MeshStandardMaterial({ color: 0xb68652 }));
+  footL.position.set(0, 0.01, -0.2); stopperGroup.add(footL);
+  const footR = footL.clone(); footR.position.z = 0.2; stopperGroup.add(footR);
+  stopperGroup.position.set(-0.08, tableY + 0.03, tableZ);
+  booth.add(stopperGroup);
+
+  // --- STATION 1 PROPS: Bamboo Tray & 5 Tea Balls ---
+  const trayGroup = new THREE.Group();
+  const trayBase = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.28, 0.24, 0.032, 32),
+    new THREE.MeshStandardMaterial({ map: makeBambooWeaveTexture(), roughness: 0.78 })
+  );
+  trayBase.castShadow = true; trayBase.receiveShadow = true;
+  trayGroup.add(trayBase);
+
+  const trayRim = new THREE.Mesh(
+    new THREE.TorusGeometry(0.28, 0.024, 12, 36),
+    new THREE.MeshStandardMaterial({ color: 0x9c6d32, roughness: 0.72 })
+  );
+  trayRim.rotation.x = Math.PI / 2; trayRim.position.y = 0.022;
+  trayGroup.add(trayRim);
+  trayGroup.position.set(-0.64, tableY + 0.05, tableZ + 0.02);
+  booth.add(trayGroup);
+
+  const teaBalls = [];
+  const teaBallMat = new THREE.MeshStandardMaterial({ color: 0x2e8b57, roughness: 0.88, flatShading: true });
+  [[-0.13, 0.056, -0.08], [0.11, 0.056, -0.1], [0.0, 0.056, 0.02], [-0.11, 0.056, 0.12], [0.13, 0.056, 0.1]].forEach((off, idx) => {
+    const ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.054, 1), teaBallMat);
+    ball.position.set(off[0], off[1], off[2]);
+    ball.castShadow = true;
+    trayGroup.add(ball);
+    teaBalls.push({
+      mesh: ball,
+      base: new THREE.Vector3(off[0], off[1], off[2]),
+      vy: 0, y: off[1],
+      rotSpeed: new THREE.Vector3(4 + idx, 3 + idx * 0.7, 5 - idx * 0.4)
+    });
+  });
+
+  const spareTray = trayBase.clone();
+  spareTray.scale.set(0.82, 1, 0.82);
+  spareTray.position.set(-1.05, tableY + 0.048, tableZ - 0.14);
+  booth.add(spareTray);
+
+  // --- STATION 2 & 3 PROPS ---
+  const teaTray = new THREE.Mesh(new THREE.BoxGeometry(0.64, 0.048, 0.44), woodDarkMat);
+  teaTray.position.set(0.46, tableY + 0.054, tableZ + 0.02);
+  teaTray.castShadow = true; teaTray.receiveShadow = true;
+  booth.add(teaTray);
+
+  // Decorative Bamboo Tea Caddy & Scoop on Gongfu Tray
+  const caddy = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 0.11, 16), new THREE.MeshStandardMaterial({ color: 0x1e5638, roughness: 0.35, metalness: 0.1 }));
+  caddy.position.set(0.22, tableY + 0.13, tableZ - 0.12);
+  caddy.castShadow = true;
+  booth.add(caddy);
+
+  // Sculpted Purple-Clay Teapot (Zisha)
+  const teapotGroup = new THREE.Group();
+  const clayMat = new THREE.MeshStandardMaterial({ color: 0x8f3f26, roughness: 0.42, metalness: 0.08 });
+  const potPoints = [
+    new THREE.Vector2(0.0, 0.0), new THREE.Vector2(0.085, 0.0),
+    new THREE.Vector2(0.13, 0.058), new THREE.Vector2(0.125, 0.115),
+    new THREE.Vector2(0.08, 0.16), new THREE.Vector2(0.062, 0.175)
+  ];
+  const potBody = new THREE.Mesh(new THREE.LatheGeometry(potPoints, 28), clayMat);
+  potBody.castShadow = true;
+  teapotGroup.add(potBody);
+  const potLid = new THREE.Mesh(new THREE.SphereGeometry(0.065, 18, 10, 0, Math.PI * 2, 0, Math.PI / 2), clayMat);
+  potLid.position.y = 0.168; teapotGroup.add(potLid);
+  const potKnob = new THREE.Mesh(new THREE.SphereGeometry(0.019, 12, 10), clayMat);
+  potKnob.position.y = 0.238; teapotGroup.add(potKnob);
+  const spout = new THREE.Mesh(new THREE.CylinderGeometry(0.013, 0.024, 0.135, 12), clayMat);
+  spout.position.set(-0.14, 0.11, 0); spout.rotation.z = 0.85; teapotGroup.add(spout);
+  const handle = new THREE.Mesh(new THREE.TorusGeometry(0.058, 0.014, 10, 20, Math.PI * 1.25), clayMat);
+  handle.position.set(0.12, 0.095, 0); handle.rotation.z = -Math.PI * 0.62; teapotGroup.add(handle);
+
+  const teapotHomePos = new THREE.Vector3(0.64, tableY + 0.078, tableZ + 0.02);
+  teapotGroup.position.copy(teapotHomePos);
+  booth.add(teapotGroup);
+
+  // Clear 70% Target Test Cup
+  const cupGroup = new THREE.Group();
+  const cupH = 0.165;
+  const cupGlassMat = new THREE.MeshPhysicalMaterial({
+    color: 0xffffff, transparent: true, opacity: 0.36, roughness: 0.08, metalness: 0.05, clearcoat: 1.0, side: THREE.DoubleSide
+  });
+  const cupShell = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.046, cupH, 28, 1, true), cupGlassMat);
+  cupShell.position.y = cupH / 2; cupGroup.add(cupShell);
+  const cupBase = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.046, 0.01, 28), cupGlassMat);
+  cupBase.position.y = 0.005; cupGroup.add(cupBase);
+
+  const targetBand = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.058, 0.0565, cupH * 0.12, 28, 1, true),
+    new THREE.MeshBasicMaterial({ color: 0x22c55e, transparent: true, opacity: 0.58, side: THREE.DoubleSide })
+  );
+  targetBand.position.y = cupH * 0.70;
+  cupGroup.add(targetBand);
+
+  const cupWater = new THREE.Mesh(
+    new THREE.CylinderGeometry(0.053, 0.043, 0.145, 24),
+    new THREE.MeshStandardMaterial({ color: 0x67d8ff, transparent: true, opacity: 0.8, roughness: 0.1, metalness: 0.1 })
+  );
+  cupWater.position.y = 0.01; cupWater.scale.y = 0.01; cupWater.visible = false;
+  cupGroup.add(cupWater);
+  cupGroup.position.set(0.34, tableY + 0.078, tableZ + 0.02);
+  booth.add(cupGroup);
+
+  // Animated Water Pouring Stream
+  const streamCurve = new THREE.QuadraticBezierCurve3(
+    new THREE.Vector3(0.48, tableY + 0.33, tableZ + 0.02),
+    new THREE.Vector3(0.38, tableY + 0.32, tableZ + 0.02),
+    new THREE.Vector3(0.34, tableY + 0.12, tableZ + 0.02)
+  );
+  const waterStream = new THREE.Mesh(
+    new THREE.TubeGeometry(streamCurve, 18, 0.01, 8, false),
+    new THREE.MeshStandardMaterial({ color: 0x7dd3fc, transparent: true, opacity: 0.88, roughness: 0.08 })
+  );
+  waterStream.visible = false;
+  booth.add(waterStream);
+
+  // Glazed Blue-and-White Porcelain Cups
+  const bwMat = new THREE.MeshStandardMaterial({ map: makeBlueWhiteCupTexture(), roughness: 0.25, metalness: 0.05 });
+  [[0.22, 0.14], [0.78, -0.13]].forEach(([cx, cz]) => {
+    const c = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.03, 0.095, 18), bwMat);
+    c.position.set(cx, tableY + 0.078, tableZ + cz);
+    c.castShadow = true;
+    booth.add(c);
+  });
+
+  // Bookmark Prize Tray
+  const bmTray = new THREE.Mesh(new THREE.BoxGeometry(0.38, 0.028, 0.32), woodWarmMat);
+  bmTray.position.set(1.02, tableY + 0.044, tableZ + 0.02);
+  booth.add(bmTray);
+
+  const floatingBookmark = new THREE.Group();
+  ['茶', '和', '靜', '福'].forEach((ch, i) => {
+    const bm = new THREE.Mesh(
+      new THREE.BoxGeometry(0.082, 0.008, 0.22),
+      new THREE.MeshStandardMaterial({ map: makeBookmarkTexture(ch), roughness: 0.68 })
+    );
+    bm.position.set(0.89 + i * 0.085, tableY + 0.066, tableZ + 0.02);
+    bm.rotation.y = (i - 1.5) * 0.08;
+    booth.add(bm);
+
+    if (i === 0) {
+      const heroBm = new THREE.Mesh(
+        new THREE.BoxGeometry(0.13, 0.34, 0.01),
+        new THREE.MeshStandardMaterial({ map: makeBookmarkTexture('茶'), roughness: 0.45 })
+      );
+      floatingBookmark.add(heroBm);
+      const tassel = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.015, 0.11, 8), new THREE.MeshStandardMaterial({ color: 0xdc2626 }));
+      tassel.position.y = 0.22;
+      floatingBookmark.add(tassel);
+    }
+  });
+  floatingBookmark.position.set(1.02, tableY + 0.42, tableZ + 0.02);
+  floatingBookmark.visible = false;
+  booth.add(floatingBookmark);
+
+  // Water Recycling Bucket tucked under far-right Desk 2
+  const bucketGroup = new THREE.Group();
+  const bucket = new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.145, 0.34, 18), new THREE.MeshStandardMaterial({ color: 0x0284c7, roughness: 0.42 }));
+  bucket.position.y = 0.17; bucket.castShadow = true;
+  bucketGroup.add(bucket);
+  const bucketWater = new THREE.Mesh(new THREE.CircleGeometry(0.16, 18), new THREE.MeshStandardMaterial({ color: 0x38bdf8, roughness: 0.12 }));
+  bucketWater.rotation.x = -Math.PI / 2; bucketWater.position.y = 0.30;
+  bucketGroup.add(bucketWater);
+  bucketGroup.position.set(1.02, 0, tableZ - 0.15);
+  booth.add(bucketGroup);
+
+  // Storage boxes tucked flat against back wall
+  const boxMat = new THREE.MeshStandardMaterial({ color: 0xc29863, roughness: 0.9 });
+  const box1 = new THREE.Mesh(new THREE.BoxGeometry(0.46, 0.32, 0.32), boxMat);
+  box1.position.set(-1.05, 0.16, -D / 2 + 0.24); box1.castShadow = true; booth.add(box1);
+  const box2 = new THREE.Mesh(new THREE.BoxGeometry(0.42, 0.26, 0.3), boxMat);
+  box2.position.set(1.05, 0.13, -D / 2 + 0.24); box2.castShadow = true; booth.add(box2);
+
+  // =========================================================
+  // 7. ANATOMICALLY CLEAR 3D 「叩指禮」 HAND FOR STAGE 3
+  // =========================================================
+  const kouzhiHandGroup = new THREE.Group();
+  const handSkinMat = new THREE.MeshStandardMaterial({ color: 0xf4c7a1, roughness: 0.52 });
+  const sleeveMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8 });
+
+  // Forearm & white school shirt cuff entering from front (+Z)
+  const forearm = new THREE.Mesh(new THREE.CylinderGeometry(0.032, 0.036, 0.16, 14), handSkinMat);
+  forearm.rotation.x = Math.PI / 2;
+  forearm.position.set(0, 0.068, 0.17);
+  kouzhiHandGroup.add(forearm);
+
+  const cuff = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.042, 0.07, 14), sleeveMat);
+  cuff.rotation.x = Math.PI / 2;
+  cuff.position.set(0, 0.068, 0.23);
+  kouzhiHandGroup.add(cuff);
+
+  // Palm (slightly angled downward toward the table)
+  const palm = new THREE.Mesh(new THREE.BoxGeometry(0.076, 0.026, 0.088), handSkinMat);
+  palm.position.set(0, 0.068, 0.055);
+  palm.rotation.x = 0.12;
+  palm.castShadow = true;
+  kouzhiHandGroup.add(palm);
+
+  // Tucked Thumb (curled gently inward on left side of right hand)
+  const thumb = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.012, 0.048, 10), handSkinMat);
+  thumb.rotation.set(0.4, 0, -0.85);
+  thumb.position.set(-0.034, 0.052, 0.04);
+  kouzhiHandGroup.add(thumb);
+
+  // Tucked Ring & Pinky Fingers (curled neatly into palm on right side)
+  [0.017, 0.032].forEach((fx) => {
+    const curled = new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.0095, 0.038, 10), handSkinMat);
+    curled.rotation.x = Math.PI * 0.72;
+    curled.position.set(fx, 0.048, 0.016);
+    kouzhiHandGroup.add(curled);
+  });
+
+  // Articulated Bent Index & Middle Fingers (食指、中指併攏屈曲 — proper 叩指禮!)
+  const kouzhiFingersPivot = new THREE.Group();
+  kouzhiFingersPivot.position.set(-0.012, 0.066, 0.012);
+  kouzhiHandGroup.add(kouzhiFingersPivot);
+
+  [-0.011, 0.011].forEach((fx) => {
+    // Proximal phalanx (angled slightly forward & down)
+    const seg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.009, 0.010, 0.046, 10), handSkinMat);
+    seg1.rotation.x = 1.05;
+    seg1.position.set(fx, -0.01, -0.018);
+    seg1.castShadow = true;
+    kouzhiFingersPivot.add(seg1);
+
+    // Knuckle joint sphere
+    const knuckle = new THREE.Mesh(new THREE.SphereGeometry(0.0095, 10, 10), handSkinMat);
+    knuckle.position.set(fx, -0.021, -0.038);
+    kouzhiFingersPivot.add(knuckle);
+
+    // Distal phalanx (bent sharply downward so fingertips point at tabletop!)
+    const seg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.0075, 0.0088, 0.044, 10), handSkinMat);
+    seg2.rotation.x = 0.25;
+    seg2.position.set(fx, -0.041, -0.043);
+    seg2.castShadow = true;
+    kouzhiFingersPivot.add(seg2);
+
+    // Rounded fingertip touching tabletop
+    const tip = new THREE.Mesh(new THREE.SphereGeometry(0.008, 10, 10), handSkinMat);
+    tip.position.set(fx, -0.062, -0.048);
+    kouzhiFingersPivot.add(tip);
+  });
+
+  // Position right hand on the table next to the clear cup (facing -Z toward the Tea Master)
+  const kouzhiBaseY = tableY + 0.035;
+  kouzhiHandGroup.position.set(0.54, kouzhiBaseY, tableZ + 0.25);
+  kouzhiHandGroup.visible = false;
+  booth.add(kouzhiHandGroup);
+
+  // Golden Tap Ripple Ring directly under the two tapping fingertips
+  const tapRipple = new THREE.Mesh(
+    new THREE.RingGeometry(0.018, 0.038, 28),
+    new THREE.MeshBasicMaterial({ color: 0xf59e0b, transparent: true, opacity: 0.0, side: THREE.DoubleSide })
+  );
+  tapRipple.rotation.x = -Math.PI / 2;
+  tapRipple.position.set(0.528, tableY + 0.036, tableZ + 0.21);
+  booth.add(tapRipple);
+
+  // 3D Two-Handed Serve & Bow Group (雙手奉茶＋微鞠躬)
+  const twoHandsGroup = new THREE.Group();
+  const serveCup = new THREE.Mesh(new THREE.CylinderGeometry(0.044, 0.034, 0.095, 20), bwMat);
+  serveCup.position.set(0, 0.05, 0);
+  serveCup.castShadow = true;
+  twoHandsGroup.add(serveCup);
+  const serveTea = new THREE.Mesh(
+    new THREE.CircleGeometry(0.038, 18),
+    new THREE.MeshStandardMaterial({ color: 0x67d8ff, roughness: 0.15 })
+  );
+  serveTea.rotation.x = -Math.PI / 2;
+  serveTea.position.y = 0.078;
+  twoHandsGroup.add(serveTea);
+  [-1, 1].forEach((side) => {
+    const hg = new THREE.Group();
+    const palmH = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.068, 0.082), handSkinMat);
+    palmH.position.set(side * 0.052, 0.052, 0.01);
+    palmH.rotation.y = side * -0.18;
+    hg.add(palmH);
+    const armH = new THREE.Mesh(new THREE.CylinderGeometry(0.026, 0.03, 0.15, 12), handSkinMat);
+    armH.rotation.x = Math.PI / 2;
+    armH.position.set(side * 0.072, 0.048, 0.12);
+    armH.rotation.z = side * 0.18;
+    hg.add(armH);
+    const cuffH = new THREE.Mesh(new THREE.CylinderGeometry(0.034, 0.036, 0.06, 12), sleeveMat);
+    cuffH.rotation.x = Math.PI / 2;
+    cuffH.position.set(side * 0.088, 0.048, 0.185);
+    hg.add(cuffH);
+    twoHandsGroup.add(hg);
+  });
+  const twoHandsBasePos = new THREE.Vector3(0.46, tableY + 0.08, tableZ + 0.18);
+  twoHandsGroup.position.copy(twoHandsBasePos);
+  twoHandsGroup.visible = false;
+  booth.add(twoHandsGroup);
+
+  // 3D Open-Palm "Please" Gesture Group (伸掌禮：四指併攏、掌心略凹側伸杯旁)
+  const openPalmGroup = new THREE.Group();
+  const opArm = new THREE.Mesh(new THREE.CylinderGeometry(0.028, 0.032, 0.15, 12), handSkinMat);
+  opArm.rotation.x = Math.PI / 2;
+  opArm.position.set(0, 0.06, 0.16);
+  openPalmGroup.add(opArm);
+  const opCuff = new THREE.Mesh(new THREE.CylinderGeometry(0.036, 0.038, 0.06, 12), sleeveMat);
+  opCuff.rotation.x = Math.PI / 2;
+  opCuff.position.set(0, 0.06, 0.22);
+  openPalmGroup.add(opCuff);
+  const opPalm = new THREE.Mesh(new THREE.BoxGeometry(0.022, 0.076, 0.084), handSkinMat);
+  opPalm.position.set(0, 0.068, 0.05);
+  opPalm.rotation.z = 0.28; // Slightly cupped upward toward the teacup
+  openPalmGroup.add(opPalm);
+  // Four fingers gently together extending forward (-Z)
+  for (let f = 0; f < 4; f++) {
+    const fg = new THREE.Mesh(new THREE.CylinderGeometry(0.0075, 0.0085, 0.068, 8), handSkinMat);
+    fg.rotation.x = Math.PI / 2 - 0.1;
+    fg.position.set(-0.008 + f * 0.004, 0.095 - f * 0.017, -0.022);
+    openPalmGroup.add(fg);
+  }
+  const opThumb = new THREE.Mesh(new THREE.CylinderGeometry(0.0085, 0.0095, 0.044, 8), handSkinMat);
+  opThumb.rotation.set(Math.PI / 2 - 0.45, 0, -0.25);
+  opThumb.position.set(-0.016, 0.105, 0.022);
+  openPalmGroup.add(opThumb);
+
+  const openPalmBasePos = new THREE.Vector3(0.56, tableY + 0.06, tableZ + 0.18);
+  openPalmGroup.position.copy(openPalmBasePos);
+  openPalmGroup.visible = false;
+  booth.add(openPalmGroup);
+
+  // =========================================================
+  // 8. UPGRADED ARTICULATED 3D STUDENT CHARACTERS
+  // =========================================================
+  function createStudent(apronHex, hairHex, isVisitor, hasPonytail) {
+    const g = new THREE.Group();
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0xf0ba8d, roughness: 0.72, envMapIntensity: 0.22 });
+    const shirtMat = new THREE.MeshStandardMaterial({ color: isVisitor ? 0x2563eb : 0xf4f4f2, roughness: 0.85, envMapIntensity: 0.2 });
+    const uniformBotMat = new THREE.MeshStandardMaterial({ color: 0x1b3456, roughness: 0.85, envMapIntensity: 0.2 });
+    const shoeMat = new THREE.MeshStandardMaterial({ color: 0x1f2937, roughness: 0.7 });
+    const hairMat = new THREE.MeshStandardMaterial({ color: hairHex, roughness: 0.88, envMapIntensity: 0.15 });
+
+    // Legs & Shoes
+    [-0.085, 0.085].forEach(lx => {
+      const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.056, 0.05, 0.62, 12), uniformBotMat);
+      leg.position.set(lx, 0.34, 0); leg.castShadow = true; g.add(leg);
+      const shoe = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.06, 0.16), shoeMat);
+      shoe.position.set(lx, 0.03, 0.03); g.add(shoe);
+    });
+
+    // Torso + School Tie + Apron
+    const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.16, 0.185, 0.56, 14), shirtMat);
+    torso.position.y = 0.92; torso.castShadow = true; g.add(torso);
+
+    const tie = new THREE.Mesh(new THREE.ConeGeometry(0.032, 0.22, 4), new THREE.MeshStandardMaterial({ color: 0x155e3b }));
+    tie.rotation.x = Math.PI; tie.position.set(0, 1.08, 0.17); g.add(tie);
+
+    if (!isVisitor) {
+      const apron = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.46, 0.04), new THREE.MeshStandardMaterial({ color: apronHex, roughness: 0.88, envMapIntensity: 0.2 }));
+      apron.position.set(0, 0.84, 0.175); g.add(apron);
+    }
+
+    // Neck + Head + Hair + Optional Ponytail
+    const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.052, 0.058, 0.08, 10), skinMat);
+    neck.position.y = 1.22; g.add(neck);
+
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.17, 18, 16), skinMat);
+    head.position.y = 1.38; head.castShadow = true; g.add(head);
+
+    const hair = new THREE.Mesh(new THREE.SphereGeometry(0.182, 18, 12, 0, Math.PI * 2, 0, Math.PI * 0.62), hairMat);
+    hair.position.y = 1.40; g.add(hair);
+
+    if (hasPonytail) {
+      const pony = new THREE.Mesh(new THREE.ConeGeometry(0.065, 0.26, 10), hairMat);
+      pony.position.set(0, 1.34, -0.19);
+      pony.rotation.x = -0.35;
+      g.add(pony);
+    }
+
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111827 });
+    [-0.056, 0.056].forEach(ex => {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.017, 8, 8), eyeMat);
+      eye.position.set(ex, 1.38, 0.158); g.add(eye);
+    });
+
+    // Arms
+    const armL = new THREE.Group();
+    armL.position.set(-0.21, 1.12, 0);
+    const armMeshL = new THREE.Mesh(new THREE.CylinderGeometry(0.042, 0.038, 0.42, 10), skinMat);
+    armMeshL.position.y = -0.19; armL.add(armMeshL); g.add(armL);
+
+    const armR = new THREE.Group();
+    armR.position.set(0.21, 1.12, 0);
+    const armMeshR = armMeshL.clone();
+    armR.add(armMeshR); g.add(armR);
+
+    g.userData = { armL, armR, head };
+    return g;
+  }
+
+  const hostA = createStudent(0x15803d, 0x1f2937, false, true);
+  hostA.position.set(-1.38, 0, 1.44);
+  hostA.rotation.y = 0.42;
+  booth.add(hostA);
+  const hawkerBm = new THREE.Mesh(new THREE.BoxGeometry(0.085, 0.21, 0.01), new THREE.MeshStandardMaterial({ map: makeBookmarkTexture('茶') }));
+  hawkerBm.position.set(0, -0.4, 0.05);
+  hostA.userData.armL.add(hawkerBm);
+
+  const hostB = createStudent(0x1f7a4c, 0x292524, false, false);
+  hostB.position.set(-0.64, 0, -0.08);
+  booth.add(hostB);
+
+  const hostC = createStudent(0xb45309, 0x1c1917, false, true);
+  hostC.position.set(0.42, 0, -0.08);
+  booth.add(hostC);
+
+  const hostD = createStudent(0xd97706, 0x312e2b, false, false);
+  hostD.position.set(0.98, 0, -0.28);
+  booth.add(hostD);
+
+  // Visitor avatar (ONLY shown in Overview & Floorplan so it NEVER blocks close-up 1st-person views!)
+  const visitor = createStudent(0x000000, 0x27272a, true, false);
+  visitor.position.set(-0.64, 0, 1.42);
+  visitor.rotation.y = Math.PI;
+  booth.add(visitor);
+
+  // Floating Golden Tea-Aroma Ambient Sparkles
+  const sparkCount = 45;
+  const sparkPos = new Float32Array(sparkCount * 3);
+  for (let i = 0; i < sparkCount; i++) {
+    sparkPos[i * 3] = (Math.random() - 0.5) * 4.2;
+    sparkPos[i * 3 + 1] = 0.8 + Math.random() * 1.8;
+    sparkPos[i * 3 + 2] = (Math.random() - 0.5) * 2.2;
+  }
+  const sparkGeo = new THREE.BufferGeometry();
+  sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+  const sparkles = new THREE.Points(
+    sparkGeo,
+    new THREE.PointsMaterial({ color: 0xfef08a, size: 0.045, transparent: true, opacity: 0.65 })
+  );
+  booth.add(sparkles);
+
+  // =========================================================
+  // 9. FLOORPLAN FLOW ARROWS
+  // =========================================================
+  const flowGroup = new THREE.Group();
+  function addFloorArrow(x1, z1, x2, z2, colorHex) {
+    const dir = new THREE.Vector3(x2 - x1, 0, z2 - z1);
+    flowGroup.add(new THREE.ArrowHelper(dir.clone().normalize(), new THREE.Vector3(x1, 0.03, z1), dir.length(), colorHex, 0.32, 0.22));
+  }
+  addFloorArrow(-1.5, 1.95, -0.68, 1.95, 0x1f7a4c);
+  addFloorArrow(-0.48, 1.95, 0.42, 1.95, 0xd94e2a);
+  addFloorArrow(0.58, 1.95, 1.35, 1.95, 0xc98a1b);
+  booth.add(flowGroup);
+
+  // =========================================================
+  // 10. CAMERA PRESETS & SMOOTH ORBIT
+  // =========================================================
+  const views = {
+    overview: {
+      pos: new THREE.Vector3(0.25, 2.85, 5.5),
+      target: new THREE.Vector3(0, 1.2, 0.15),
+      visitorX: -0.64,
+      badge: '全景',
+      time: '90 秒 · HK$0',
+      title: '茶館見習生',
+      desc: '一張長檯 · 左至右闖三關'
+    },
+    stage1: {
+      pos: new THREE.Vector3(-0.64, 1.52, 2.05),
+      target: new THREE.Vector3(-0.64, 0.86, 0.70),
+      visitorX: -0.64,
+      badge: '第一關',
+      time: '20 秒',
+      title: '搖青大作戰',
+      desc: '用竹篩拋接 5 顆紙茶球'
+    },
+    stage2: {
+      pos: new THREE.Vector3(0.46, 1.44, 1.88),
+      target: new THREE.Vector3(0.46, 0.88, 0.70),
+      visitorX: 0.46,
+      badge: '第二關',
+      time: '30 秒',
+      title: '茶倒七分滿',
+      desc: '常溫清水倒至 65%–75%'
+    },
+    stage3: {
+      pos: new THREE.Vector3(0.64, 1.38, 1.82),
+      target: new THREE.Vector3(0.48, 0.86, 0.76),
+      visitorX: 0.56,
+      badge: '第三關',
+      time: '25 秒',
+      title: '奉茶與叩指禮',
+      desc: '雙手鞠躬 · 伸掌禮 · 叩指3下'
+    },
+    floorplan: {
+      pos: new THREE.Vector3(0, 6.8, 0.95),
+      target: new THREE.Vector3(0, 0.2, 0.35),
+      visitorX: 0.0,
+      badge: '俯視圖',
+      time: '4 人一更',
+      title: '單邊攤位佈局',
+      desc: '已隱藏頂棚檢視內部動線'
+    }
+  };
+
+  let currentView = 'overview';
+  let desiredPos = views.overview.pos.clone();
+  let desiredTarget = views.overview.target.clone();
+  let currentTarget = views.overview.target.clone();
+  camera.position.copy(views.overview.pos);
+  camera.lookAt(currentTarget);
+
+  let isDragging = false, prevX = 0, prevY = 0, userOverrodeCamera = false;
+  const spherical = new THREE.Spherical();
+  function syncSphericalFromCamera() {
+    spherical.setFromVector3(camera.position.clone().sub(currentTarget));
+  }
+  container.addEventListener('pointerdown', (e) => {
+    isDragging = true; userOverrodeCamera = true;
+    prevX = e.clientX; prevY = e.clientY;
+    syncSphericalFromCamera();
+  });
+  window.addEventListener('pointermove', (e) => {
+    if (!isDragging) return;
+    const dx = e.clientX - prevX, dy = e.clientY - prevY;
+    prevX = e.clientX; prevY = e.clientY;
+    spherical.theta -= dx * 0.007;
+    spherical.phi = Math.max(0.14, Math.min(Math.PI / 2 - 0.04, spherical.phi - dy * 0.006));
+    camera.position.copy(currentTarget).add(new THREE.Vector3().setFromSpherical(spherical));
+    camera.lookAt(currentTarget);
+  });
+  window.addEventListener('pointerup', () => { isDragging = false; });
+  container.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    userOverrodeCamera = true;
+    syncSphericalFromCamera();
+    spherical.radius = Math.max(1.3, Math.min(13.5, spherical.radius + e.deltaY * 0.005));
+    camera.position.copy(currentTarget).add(new THREE.Vector3().setFromSpherical(spherical));
+    camera.lookAt(currentTarget);
+  }, { passive: false });
+
+  // =========================================================
+  // 11. INTERACTIVE STAGE MECHANICS
+  // =========================================================
+  let s1Count = 0, s1TossAnim = 0;
+  function triggerStage1Toss() {
+    playBambooClack();
+    s1TossAnim = 1.0;
+    teaBalls.forEach((b, idx) => { b.vy = 2.55 + (idx % 3) * 0.35; });
+    s1Count = (s1Count >= 5) ? 1 : s1Count + 1;
+    document.getElementById('s1-count').textContent = s1Count + ' / 5';
+    const fb = document.getElementById('s1-feedback');
+    if (s1Count === 5) {
+      playChime();
+      fb.textContent = '🎉 過關！茶葉香氣四溢，請移步到右邊「第二關：茶倒七分滿」！';
+      fb.className = 'text-[11px] font-bold text-emerald-700 leading-snug';
+    } else {
+      fb.textContent = `做得好！已成功拋接 ${s1Count} 次，繼續點擊拋起竹篩至 5 次過關！`;
+      fb.className = 'text-[11px] text-emerald-800 leading-snug';
+    }
+  }
+  document.getElementById('btn-s1-toss').addEventListener('click', triggerStage1Toss);
+
+  let stage2Level = 0, isPouring = false, pourSoundCooldown = 0;
+  function updateStage2UI() {
+    const pct = Math.round(stage2Level);
+    document.getElementById('s2-pct').textContent = pct + '%';
+    const bar = document.getElementById('s2-bar');
+    bar.style.width = pct + '%';
+    bar.className = (pct >= 65 && pct <= 75)
+      ? 'h-full bg-emerald-500 transition-all duration-75 rounded-full'
+      : (pct > 75)
+      ? 'h-full bg-rose-500 transition-all duration-75 rounded-full'
+      : 'h-full bg-sky-500 transition-all duration-75 rounded-full';
+  }
+  function startPour() {
+    if (stage2Level >= 100) return;
+    isPouring = true; waterStream.visible = true;
+  }
+  function stopPour() {
+    if (!isPouring) return;
+    isPouring = false; waterStream.visible = false;
+    const pct = Math.round(stage2Level);
+    const fb = document.getElementById('s2-feedback');
+    if (pct >= 65 && pct <= 75) {
+      playChime();
+      fb.textContent = `🎉 精準 ${pct}%！完美七分滿，留下三分人情，順利過關！`;
+      fb.className = 'text-[11px] font-bold text-emerald-700 leading-snug';
+    } else if (pct < 65) {
+      fb.textContent = `目前 ${pct}%（未夠七分滿），再按住斟多一點或按「重倒」再試！`;
+      fb.className = 'text-[11px] font-bold text-amber-800 leading-snug';
+    } else {
+      fb.textContent = `哎呀 ${pct}% 太滿了（「茶滿欺人」），按「重倒」把水倒回回收桶再挑戰！`;
+      fb.className = 'text-[11px] font-bold text-rose-700 leading-snug';
+    }
+  }
+  const btnPour = document.getElementById('btn-s2-pour');
+  btnPour.addEventListener('pointerdown', (e) => { e.preventDefault(); startPour(); });
+  window.addEventListener('pointerup', stopPour);
+  btnPour.addEventListener('pointerleave', stopPour);
+  document.getElementById('btn-s2-reset').addEventListener('click', () => {
+    stage2Level = 0; isPouring = false; waterStream.visible = false; cupWater.visible = false;
+    updateStage2UI();
+    const fb = document.getElementById('s2-feedback');
+    fb.textContent = '「茶倒七分滿，留下三分是人情」：只用常溫清水，一口氣倒到綠色目標線內即過關！';
+    fb.className = 'text-[11px] text-emerald-800 leading-snug';
+  });
+
+  // Stage 3: 3 Etiquette Modes ('tap' = 叩指禮, 'bow' = 雙手奉茶＋微鞠躬, 'palm' = 伸掌禮)
+  let s3Mode = 'tap';
+  let s3AnimTime = -1;
+  let s3TapsPlayed = [false, false, false];
+
+  function triggerStage3Mode(mode) {
+    s3Mode = mode;
+    s3AnimTime = 0;
+    s3TapsPlayed = [false, false, false];
+    kouzhiHandGroup.visible = (mode === 'tap');
+    twoHandsGroup.visible = (mode === 'bow');
+    openPalmGroup.visible = (mode === 'palm');
+    cupWater.visible = true;
+    cupWater.scale.y = 0.68;
+    cupWater.position.y = 0.01 + (0.145 * 0.68) / 2;
+    if (mode === 'bow' || mode === 'palm') playChime();
+  }
+  function triggerStage3Demo() { triggerStage3Mode('tap'); }
+
+  document.getElementById('btn-s3-tap').addEventListener('click', () => triggerStage3Mode('tap'));
+  document.getElementById('btn-s3-bow').addEventListener('click', () => triggerStage3Mode('bow'));
+  document.getElementById('btn-s3-palm').addEventListener('click', () => triggerStage3Mode('palm'));
+
+  document.querySelectorAll('.quiz-opt').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const res = document.getElementById('s3-quiz-result');
+      res.classList.remove('hidden');
+      if (btn.dataset.ans === 'correct') {
+        playChime();
+        floatingBookmark.visible = true;
+        res.textContent = '✅ 答對了！白族三道茶正是「一苦、二甜、三回味」，獲得 S2C 手寫茶韻書籤！';
+        res.className = 'text-[11px] font-bold text-emerald-700';
+      } else {
+        res.textContent = '再想想喔～提示：先苦、再甜、最後餘韻悠長！';
+        res.className = 'text-[11px] font-bold text-rose-700';
+      }
+    });
+  });
+
+  // View Switcher (handles canopy hiding & 1st-person visitor hiding!)
+  function setView(viewName) {
+    currentView = viewName;
+    const v = views[viewName];
+    desiredPos.copy(v.pos);
+    desiredTarget.copy(v.target);
+    userOverrodeCamera = false;
+
+    document.getElementById('stage-badge').textContent = v.badge;
+    document.getElementById('stage-time').textContent = v.time;
+    document.getElementById('stage-title').textContent = v.title;
+    document.getElementById('stage-desc').textContent = v.desc;
+
+    ['overview', 'stage1', 'stage2', 'stage3', 'floorplan'].forEach(k => {
+      document.getElementById('ctrl-' + k).classList.toggle('hidden', k !== viewName);
+    });
+    document.querySelectorAll('.nav-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.view === viewName);
+    });
+
+    // FIX #2: Hide roof canopy & banner in top-down floorplan view so nothing blocks the layout!
+    roofGroup.visible = (viewName !== 'floorplan');
+
+    // FIX #3: Hide full-body visitor in close-up 1st-person stage views so camera is 100% unobstructed!
+    visitor.visible = (viewName === 'overview' || viewName === 'floorplan');
+
+    // FIX #4: Show anatomically clear close-up Kouzhi hand in Stage 3!
+    kouzhiHandGroup.visible = (viewName === 'stage3');
+    if (viewName === 'stage3') {
+      floatingBookmark.visible = true;
+      triggerStage3Mode('tap');
+    } else {
+      floatingBookmark.visible = false;
+      twoHandsGroup.visible = false;
+      openPalmGroup.visible = false;
+      s3AnimTime = -1;
+      if (!isPouring) waterStream.visible = false;
+    }
+
+    flowGroup.visible = (viewName === 'overview' || viewName === 'floorplan');
+  }
+
+  document.querySelectorAll('.nav-btn').forEach(btn => {
+    btn.addEventListener('click', () => { stopAutoTour(); setView(btn.dataset.view); });
+  });
+
+  // Auto Tour
+  let tourInterval = null;
+  const tourOrder = ['overview', 'stage1', 'stage2', 'stage3', 'floorplan'];
+  let tourIdx = 0;
+  function stopAutoTour() {
+    if (tourInterval) {
+      clearInterval(tourInterval); tourInterval = null;
+      document.getElementById('tour-icon').textContent = '▶';
+      document.getElementById('tour-text').textContent = '自動導覽';
+    }
+  }
+  document.getElementById('btn-tour').addEventListener('click', () => {
+    if (tourInterval) { stopAutoTour(); return; }
+    document.getElementById('tour-icon').textContent = '⏸';
+    document.getElementById('tour-text').textContent = '導覽中';
+    tourIdx = tourOrder.indexOf(currentView);
+    const stepTour = () => {
+      tourIdx = (tourIdx + 1) % tourOrder.length;
+      const next = tourOrder[tourIdx];
+      setView(next);
+      if (next === 'stage1') triggerStage1Toss();
+      if (next === 'stage2') {
+        stage2Level = 0; isPouring = true; waterStream.visible = true;
+        setTimeout(() => { if (currentView === 'stage2') stopPour(); }, 1850);
+      }
+    };
+    stepTour();
+    tourInterval = setInterval(stepTour, 5200);
+  });
+
+  // Daylight / Golden Lantern Lighting Toggle
+  let isGoldenMode = false;
+  document.getElementById('btn-light').addEventListener('click', () => {
+    isGoldenMode = !isGoldenMode;
+    if (isGoldenMode) {
+      skyUniforms.topColor.value.setHex(0x162038);
+      skyUniforms.bottomColor.value.setHex(0xc26d47);
+      skyUniforms.sunColor.value.setHex(0xff8c42);
+      scene.fog.color.setHex(0x282738);
+      sunLight.color.setHex(0xff9e5e);
+      sunLight.intensity = 0.55;
+      hemiLight.intensity = 0.38;
+      lanternLights.forEach(l => { l.light.intensity = 1.45; l.mat.emissiveIntensity = 1.25; });
+      document.getElementById('light-icon').textContent = '🏮';
+      document.getElementById('light-text').textContent = '黃昏燈籠';
+    } else {
+      skyUniforms.topColor.value.setHex(0x5ba8e6);
+      skyUniforms.bottomColor.value.setHex(0xeaf5ee);
+      skyUniforms.sunColor.value.setHex(0xfff4c2);
+      scene.fog.color.setHex(0xdceee8);
+      sunLight.color.setHex(0xfff4d6);
+      sunLight.intensity = 1.15;
+      hemiLight.intensity = 0.52;
+      lanternLights.forEach(l => { l.light.intensity = 0.0; l.mat.emissiveIntensity = 0.35; });
+      document.getElementById('light-icon').textContent = '☀️';
+      document.getElementById('light-text').textContent = '日景';
+    }
+  });
+
+  document.getElementById('btn-sound').addEventListener('click', (e) => {
+    soundEnabled = !soundEnabled;
+    e.currentTarget.textContent = soundEnabled ? '🔊' : '🔇';
+  });
+  document.getElementById('btn-info-toggle').addEventListener('click', () => {
+    document.getElementById('info-panel').classList.toggle('hidden');
+  });
+
+  // =========================================================
+  // 12. MAIN ANIMATION LOOP
+  // =========================================================
+  const clock = new THREE.Clock();
+
+  function animate() {
+    requestAnimationFrame(animate);
+    const dt = Math.min(clock.getDelta(), 0.05);
+    const t = clock.getElapsedTime();
+
+    if (!userOverrodeCamera) {
+      camera.position.lerp(desiredPos, 1 - Math.exp(-4.8 * dt));
+      currentTarget.lerp(desiredTarget, 1 - Math.exp(-5.2 * dt));
+      camera.lookAt(currentTarget);
+    }
+
+    // Drifting clouds & wind sway
+    clouds.forEach((c, i) => {
+      c.position.x += dt * (0.28 + (i % 3) * 0.08);
+      if (c.position.x > 26) c.position.x = -26;
+    });
+    bambooStreamers.forEach(b => { b.group.rotation.z = Math.sin(t * 1.4 + b.phase) * 0.03; });
+    lanterns.forEach(l => {
+      l.group.rotation.z = Math.sin(t * 1.8 + l.phase) * 0.06;
+      l.group.rotation.x = Math.cos(t * 1.3 + l.phase) * 0.03;
+    });
+
+    // Subtle floating sparkles
+    sparkles.rotation.y = t * 0.08;
+    sparkles.position.y = Math.sin(t * 0.8) * 0.06;
+
+    // Host A waving bookmark warmly
+    hostA.userData.armL.rotation.z = -2.25 + Math.sin(t * 3.6) * 0.18;
+    hostA.userData.armL.rotation.x = -0.25;
+    hostA.userData.armR.rotation.z = 0.12;
+    hostA.userData.head.rotation.y = Math.sin(t * 1.5) * 0.16;
+
+    // Visitor smooth walk in Overview / Floorplan
+    if (visitor.visible) {
+      visitor.position.x += (views[currentView].visitorX - visitor.position.x) * Math.min(1, dt * 4.0);
+      visitor.position.y = Math.abs(Math.sin(t * 2.4)) * 0.015;
+    }
+
+    // Stage 1: Bamboo tray toss physics
+    if (s1TossAnim > 0) {
+      s1TossAnim = Math.max(0, s1TossAnim - dt * 2.8);
+      trayGroup.position.y = tableY + 0.05 + Math.sin(s1TossAnim * Math.PI) * 0.12;
+      trayGroup.rotation.x = -Math.sin(s1TossAnim * Math.PI) * 0.16;
+    } else {
+      trayGroup.position.y = tableY + 0.05;
+      trayGroup.rotation.x = 0;
+    }
+    teaBalls.forEach(b => {
+      if (b.vy !== 0 || b.y > b.base.y) {
+        b.y += b.vy * dt; b.vy -= 9.8 * dt;
+        b.mesh.rotation.x += b.rotSpeed.x * dt;
+        b.mesh.rotation.y += b.rotSpeed.y * dt;
+        if (b.y <= b.base.y) {
+          b.y = b.base.y;
+          b.vy = (Math.abs(b.vy) > 0.7) ? -b.vy * 0.28 : 0;
+        }
+        b.mesh.position.y = b.y;
+      }
+    });
+
+    // Stage 2 & Stage 3 Teapot Pouring + Accurate 3-Tap Kouzhi Ceremony
+    const stage3Pouring = (currentView === 'stage3' && s3Mode === 'tap' && s3AnimTime >= 0 && s3AnimTime < 2.1);
+
+    if (isPouring || stage3Pouring) {
+      teapotGroup.position.lerp(new THREE.Vector3(0.60, tableY + 0.33, tableZ + 0.02), dt * 9);
+      teapotGroup.rotation.z += (0.68 - teapotGroup.rotation.z) * dt * 9;
+      waterStream.visible = true;
+
+      if (isPouring) {
+        stage2Level = Math.min(100, stage2Level + dt * 38);
+        cupWater.visible = stage2Level > 1;
+        const frac = stage2Level / 100;
+        cupWater.scale.y = Math.max(0.02, frac);
+        cupWater.position.y = 0.01 + (0.145 * frac) / 2;
+        updateStage2UI();
+        pourSoundCooldown -= dt;
+        if (pourSoundCooldown <= 0) { playPourDrop(); pourSoundCooldown = 0.11; }
+        if (stage2Level >= 100) stopPour();
+      }
+    } else {
+      teapotGroup.position.lerp(teapotHomePos, dt * 6);
+      teapotGroup.rotation.z += (0 - teapotGroup.rotation.z) * dt * 6;
+      waterStream.visible = false;
+    }
+
+    // Stage 3 Etiquette Animations (叩指禮 / 雙手奉茶＋微鞠躬 / 伸掌禮)
+    if (currentView === 'stage3' && s3AnimTime >= 0) {
+      s3AnimTime += dt;
+      if (s3Mode === 'bow') {
+        const p = Math.sin(Math.min(1, s3AnimTime / 1.6) * Math.PI);
+        twoHandsGroup.position.z = twoHandsBasePos.z - p * 0.24;
+        twoHandsGroup.position.y = twoHandsBasePos.y + p * 0.06;
+        twoHandsGroup.rotation.x = p * 0.14;
+        hostC.rotation.x = p * 0.24; // Tea Master bows back politely!
+        hostC.userData.armL.rotation.x = -p * 0.55;
+        hostC.userData.armR.rotation.x = -p * 0.55;
+        if (s3AnimTime > 2.0) { s3AnimTime = -1; hostC.rotation.x = 0; }
+      } else if (s3Mode === 'palm') {
+        const p = Math.sin(Math.min(1, s3AnimTime / 1.5) * Math.PI);
+        openPalmGroup.position.z = openPalmBasePos.z - p * 0.14;
+        openPalmGroup.position.x = openPalmBasePos.x - p * 0.06;
+        openPalmGroup.rotation.y = p * 0.25;
+        hostC.userData.head.rotation.x = p * 0.26; // Polite nod & smile
+        if (s3AnimTime > 1.9) { s3AnimTime = -1; hostC.userData.head.rotation.x = 0; }
+      } else {
+      hostC.userData.armL.rotation.x = (s3AnimTime < 2.1) ? -0.7 : 0;
+
+      const tapTimes = [0.45, 0.95, 1.45];
+      let dip = 0;
+      let rippleAlpha = 0;
+      let rippleScale = 1;
+
+      tapTimes.forEach((tt, idx) => {
+        const diff = s3AnimTime - tt;
+        // Finger descends then lifts over 0.28s window
+        if (diff >= -0.14 && diff <= 0.14) {
+          dip = Math.max(dip, Math.cos((diff / 0.14) * (Math.PI / 2)));
+        }
+        // Trigger wood tap SFX right at contact moment
+        if (diff >= 0 && !s3TapsPlayed[idx]) {
+          s3TapsPlayed[idx] = true;
+          playSingleWoodTap();
+        }
+        // Expanding golden ripple right after contact
+        if (diff >= 0 && diff <= 0.42) {
+          const p = diff / 0.42;
+          rippleAlpha = Math.max(rippleAlpha, (1 - p) * 0.9);
+          rippleScale = Math.max(rippleScale, 1 + p * 3.0);
+        }
+      });
+
+      // Dip wrist + pitch bent index/middle fingers down onto tabletop
+      kouzhiHandGroup.position.y = kouzhiBaseY + 0.022 - dip * 0.022;
+      kouzhiFingersPivot.rotation.x = -0.12 + dip * 0.24;
+      tapRipple.material.opacity = rippleAlpha;
+      tapRipple.scale.setScalar(rippleScale);
+
+      if (s3AnimTime > 2.4) {
+        s3AnimTime = -1;
+        tapRipple.material.opacity = 0;
+      }
+      }
+    } else {
+      hostC.rotation.x += (0 - hostC.rotation.x) * dt * 5;
+      hostC.userData.head.rotation.x += (0 - hostC.userData.head.rotation.x) * dt * 5;
+      hostC.userData.armR.rotation.x += (0 - hostC.userData.armR.rotation.x) * dt * 5;
+      kouzhiHandGroup.position.y = kouzhiBaseY + 0.022;
+      kouzhiFingersPivot.rotation.x = -0.12;
+      tapRipple.material.opacity = 0;
+      hostC.userData.armL.rotation.x += (0 - hostC.userData.armL.rotation.x) * dt * 5;
+    }
+
+    if (floatingBookmark.visible) {
+      floatingBookmark.rotation.y = t * 1.4;
+      floatingBookmark.position.y = tableY + 0.44 + Math.sin(t * 2.8) * 0.05;
+    }
+
+    renderer.render(scene, camera);
+  }
+
+  window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+  });
+
+  window.onload = function() {
+    setView('overview');
+    animate();
+  };
+})();
+</script>
+</body>
+</html>
